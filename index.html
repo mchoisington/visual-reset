@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<!--
+  ===========================================================================
+  10-MINUTE VISUAL RESET
+  A brief visual-spatial grounding activity for first responder personnel.
+
+  Not therapy, crisis support, medical treatment, or a diagnostic tool.
+
+  Single self-contained file. No dependencies, no build step, no network
+  calls, no cookies, no storage, no analytics. Everything runs client-side.
+
+  Viewport note: maximum-scale/user-scalable are intentionally locked because
+  this is a focused full-bleed interactive activity (not document content) and
+  accidental pinch/double-tap zoom disrupts gameplay. All text is sized for
+  readability without manual zoom.
+  ===========================================================================
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#10151a" />
+<meta name="description" content="10-Minute Visual Reset — a brief visual-spatial grounding activity for first responder personnel." />
+<title>10-Minute Visual Reset</title>
+<style>
+/* ==========================================================================
+   1. DESIGN TOKENS
+   Calm, muted, operational palette. Dark is the default (night-shift
+   friendly); light theme via [data-theme="light"]. Contrast targets WCAG AA.
+   ========================================================================== */
+:root {
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+
+  /* Surfaces */
+  --bg:        #10151a;
+  --panel:     #171e25;
+  --raised:    #1d2630;
+  --board:     #0b1014;
+  --grid-line: rgba(255,255,255,0.045);
+
+  /* Text */
+  --ink:       #e8edf1;
+  --ink-mid:   #a7b4bd;
+  --ink-dim:   #76848e;
+
+  /* Chrome */
+  --line:      rgba(255,255,255,0.09);
+  --accent:    #74a49e;      /* sea-glass teal — calm, not clinical */
+  --accent-ink:#0e1417;
+  --accent-wash: rgba(116,164,158,0.14);
+  --caution:   #b3796d;      /* muted clay for destructive/ending actions */
+  --focus:     #9cc4bf;
+  --scrim:     rgba(7,10,13,0.82);
+  --shadow:    0 10px 32px rgba(0,0,0,0.45);
+
+  /* Pieces — desaturated, distinct, deliberately non-neon */
+  --cell-i: #6fa2a8;
+  --cell-o: #b5a06f;
+  --cell-t: #9484ad;
+  --cell-s: #82a37b;
+  --cell-z: #b28579;
+  --cell-j: #7b90b3;
+  --cell-l: #b28f62;
+
+  --r-lg: 16px;
+  --r-md: 12px;
+  --tap: 56px;              /* minimum touch target for stressed hands */
+  --side-w: 104px;          /* game side-panel width */
+}
+
+[data-theme="light"] {
+  --bg:        #eef1f3;
+  --panel:     #f9fafb;
+  --raised:    #ffffff;
+  --board:     #e2e7ea;
+  --grid-line: rgba(0,0,0,0.06);
+
+  --ink:       #212a30;
+  --ink-mid:   #4e5d66;
+  --ink-dim:   #75828b;
+
+  --line:      rgba(0,0,0,0.11);
+  --accent:    #3e6f69;
+  --accent-ink:#ffffff;
+  --accent-wash: rgba(62,111,105,0.11);
+  --caution:   #96594c;
+  --focus:     #2b5d57;
+  --scrim:     rgba(228,233,235,0.88);
+  --shadow:    0 10px 32px rgba(30,40,45,0.16);
+
+  --cell-i: #41767c;
+  --cell-o: #8f7a3e;
+  --cell-t: #75619b;
+  --cell-s: #5c7f55;
+  --cell-z: #96604f;
+  --cell-j: #4d6a94;
+  --cell-l: #8a6a34;
+}
+
+/* ==========================================================================
+   2. BASE
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+}
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;                 /* .app owns scrolling */
+  overscroll-behavior: none;        /* no pull-to-refresh / rubber-band */
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Phase screens — one visible at a time, gentle fade on entry */
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 26px 20px 34px;
+  flex-direction: column;
+  align-items: stretch;
+  animation: screen-in 420ms ease both;
+}
+.screen.is-active { display: flex; }
+
+/* The session screen fills the viewport and manages its own layout */
+.screen--session {
+  max-width: 900px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+}
+.screen--session.is-active { display: flex; }
+
+@keyframes screen-in { from { opacity: 0; transform: translateY(6px); }
+                       to   { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+
+/* ==========================================================================
+   3. TYPOGRAPHY
+   ========================================================================== */
+h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.55rem, 5vw, 2.05rem);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  text-align: center;
+}
+h2 { margin: 0 0 8px; font-size: clamp(1.15rem, 3.6vw, 1.4rem); font-weight: 600; }
+p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62; color: var(--ink-mid); }
+.eyebrow {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.fine { font-size: 0.85rem; color: var(--ink-dim); }
+
+/* ==========================================================================
+   4. CARDS, LISTS, NOTICES
+   ========================================================================== */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card + .card, .card + .actions, .actions + .card { margin-top: 16px; }
+
+.notice {
+  background: var(--accent-wash);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--ink-mid);
+}
+
+.ground-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.ground-list li {
+  position: relative;
+  padding: 12px 14px 12px 38px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: var(--ink-mid);
+}
+.ground-list li::before {
+  content: "";
+  position: absolute;
+  left: 15px; top: 19px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.reflect-list { list-style: none; counter-reset: rf; margin: 14px 0 0; padding: 0; display: grid; gap: 11px; }
+.reflect-list li {
+  counter-increment: rf;
+  position: relative;
+  padding: 14px 16px 14px 54px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  line-height: 1.55;
+  color: var(--ink);
+}
+.reflect-list li::before {
+  content: counter(rf);
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 27px; height: 27px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent-wash);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   5. BUTTONS
+   ========================================================================== */
+.btn {
+  appearance: none;
+  font: inherit;
+  font-weight: 550;
+  color: var(--ink);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  min-height: var(--tap);
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;      /* removes double-tap zoom + tap delay */
+  transition: border-color 150ms ease, background 150ms ease, transform 70ms ease;
+}
+.btn:hover  { border-color: var(--accent); }
+.btn:active { transform: scale(0.984); }
+.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 650;
+}
+.btn--primary:hover { filter: brightness(1.06); }
+.btn--quiet   { background: transparent; }
+.btn--caution { background: transparent; color: var(--caution); border-color: var(--caution); }
+.btn--caution:hover { background: rgba(179,121,109,0.10); border-color: var(--caution); }
+.btn--tall  { min-height: 64px; font-size: 1.08rem; }
+.btn--small { min-height: 44px; padding: 0 14px; font-size: 0.86rem; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.actions .btn { flex: 1 1 150px; }
+
+/* ==========================================================================
+   6. BREATHING GUIDE
+   ========================================================================== */
+.breath { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 14px; }
+.breath__stage {
+  position: relative;
+  width: min(64vw, 250px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+.breath__ring {
+  position: absolute; inset: 4px;
+  border-radius: 50%;
+  border: 1px dashed var(--line);
+  pointer-events: none;
+}
+.breath__disc {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 50% 44%, var(--accent-wash), transparent 74%),
+              var(--accent-wash);
+  transform: scale(0.58);
+  will-change: transform;           /* GPU-composited: smooth inside iframes */
+}
+.breath__phase {
+  position: absolute;
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.breath__meta {
+  min-height: 1.35em;
+  font-size: 0.9rem;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums;
+}
+.breath__actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ==========================================================================
+   7. SESSION (GAME) LAYOUT
+   ========================================================================== */
+.session {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "bar" "play" "hint" "pads";
+}
+
+.session__bar {
+  grid-area: bar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.clock {
+  display: flex; align-items: baseline; gap: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.clock__label {
+  font-size: 0.66rem; font-weight: 650;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.clock__value { font-size: 1.6rem; font-weight: 650; color: var(--ink); transition: color 400ms ease; }
+.clock.is-low .clock__value { color: var(--caution); }
+.session__bar-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.play-zone {
+  grid-area: play;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.board-frame {
+  background: var(--board);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 8px;
+  touch-action: none;               /* browser gestures never reach the well */
+}
+#well { display: block; border-radius: 6px; background: var(--board); }
+
+.side {
+  width: var(--side-w);
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.side__box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 10px 8px;
+  text-align: center;
+}
+.side__label {
+  font-size: 0.62rem; font-weight: 650;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 7px;
+}
+.side__value { font-size: 1.14rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+#preview { display: block; margin: 0 auto; }
+
+.session__hint {
+  grid-area: hint;
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--ink-dim);
+}
+.session__keys {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-size: 0.74rem;
+  color: var(--ink-dim);
+  opacity: 0.85;
+}
+@media (pointer: coarse) { .session__keys { display: none; } }
+
+/* Touch pads */
+.pads {
+  grid-area: pads;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.pads .btn {
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 2px;
+  font-size: 0.78rem;
+  min-height: var(--tap);
+}
+.pads .glyph { font-size: 1.32rem; line-height: 1.1; }
+
+/* Landscape phones: board center, pads to the right for thumb reach */
+@media (orientation: landscape) and (max-height: 540px) {
+  .screen--session { padding-top: 8px; padding-bottom: 8px; }
+  .session {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "bar bar" "play pads";
+    column-gap: 14px;
+  }
+  .session__hint { display: none; }
+  .pads {
+    grid-template-columns: repeat(2, minmax(66px, 88px));
+    align-content: center;
+    margin: 0;
+    max-width: none;
+  }
+}
+@media (max-width: 370px) {
+  .pads { gap: 7px; }
+  .pads .btn { font-size: 0.7rem; }
+  .session__bar-btns .btn--small { padding: 0 10px; font-size: 0.78rem; }
+}
+
+/* ==========================================================================
+   8. DIALOGS
+   ========================================================================== */
+.veil {
+  position: fixed; inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: var(--scrim);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: screen-in 220ms ease both;
+}
+.veil.is-open { display: flex; }
+.dialog {
+  width: 100%;
+  max-width: 430px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  text-align: center;
+}
+.dialog h2 { margin-bottom: 10px; }
+.dialog .actions { margin-top: 20px; }
+
+/* ==========================================================================
+   9. MISC
+   ========================================================================== */
+.theme-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 10px);
+  right: calc(env(safe-area-inset-right) + 12px);
+  z-index: 30;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip: rect(0 0 0 0); overflow: hidden; white-space: nowrap;
+}
+noscript { display: block; padding: 40px 24px; text-align: center; color: var(--ink); }
+</style>
+</head>
+<body>
+<noscript>This activity needs JavaScript enabled to run. Nothing is collected or transmitted.</noscript>
+
+<button id="theme-btn" class="btn btn--quiet theme-btn" type="button"
+        aria-label="Switch between dark and light theme">
+  <span id="theme-glyph" aria-hidden="true">☾</span>
+</button>
+
+<!-- Screen-reader status announcements (sparse, non-visual) -->
+<div id="sr-status" class="sr-only" role="status" aria-live="polite"></div>
+
+<div class="app" id="app">
+
+  <!-- ====================================================================
+       PHASE 1 — PRE-RESET GROUNDING
+       ==================================================================== -->
+  <section class="screen is-active" id="screen-intro" aria-labelledby="intro-title" tabindex="-1">
+    <p class="eyebrow">First Responder Wellness</p>
+    <h1 id="intro-title">10-Minute Visual Reset</h1>
+
+    <div class="card">
+      <p class="notice">Use this brief visual-spatial activity as a post-incident reset. It is not
+        therapy, crisis support, or medical treatment. If distress remains elevated, consider
+        contacting peer support, a supervisor, chaplain support, or a qualified mental health
+        professional.</p>
+      <ul class="ground-list">
+        <li>Take one slow breath before you begin.</li>
+        <li>Notice your feet, your hands, and your breathing.</li>
+        <li>Set your attention on the shapes, movement, color, and placement.</li>
+        <li>The goal is not performance. The goal is visual focus and nervous system downshifting.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Optional breathing cue</h2>
+      <p class="fine">Three slow cycles — in for 4, hold for 7, out for 8. About a minute, and
+        entirely optional.</p>
+      <div class="breath">
+        <div class="breath__stage">
+          <span class="breath__ring" aria-hidden="true"></span>
+          <div class="breath__disc" id="breath-disc" aria-hidden="true"></div>
+          <span class="breath__phase" id="breath-phase" aria-live="polite"></span>
+        </div>
+        <div class="breath__meta" id="breath-meta">3 cycles &middot; about one minute</div>
+        <div class="breath__actions">
+          <button class="btn" id="breath-toggle" type="button">Start breathing cue</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn--primary btn--tall" id="begin-btn" type="button" style="flex-basis:100%">
+        Begin 10-Minute Reset
+      </button>
+    </div>
+    <p class="fine" style="text-align:center; margin-top:12px">
+      Fit the falling shapes together &mdash; completed rows clear on their own.
+    </p>
+  </section>
+
+  <!-- ====================================================================
+       PHASE 2 — VISUAL-SPATIAL RESET SESSION
+       ==================================================================== -->
+  <section class="screen screen--session" id="screen-session" aria-label="Visual reset activity" tabindex="-1">
+    <div class="session">
+
+      <header class="session__bar">
+        <div class="clock" id="clock" role="timer" aria-label="Time remaining">
+          <span class="clock__label">Remaining</span>
+          <span class="clock__value" id="clock-value">10:00</span>
+        </div>
+        <div class="session__bar-btns">
+          <button class="btn btn--small" id="pause-btn" type="button">Pause</button>
+          <button class="btn btn--small" id="restart-btn" type="button">Restart</button>
+          <button class="btn btn--small btn--caution" id="end-btn" type="button">End game now</button>
+        </div>
+      </header>
+
+      <div class="play-zone" id="play-zone">
+        <div class="board-frame">
+          <canvas id="well" role="img" aria-label="Falling-block playfield"></canvas>
+        </div>
+        <aside class="side" aria-label="Activity panel">
+          <div class="side__box">
+            <div class="side__label">Next</div>
+            <canvas id="preview" aria-hidden="true"></canvas>
+          </div>
+          <div class="side__box">
+            <div class="side__label">Rows</div>
+            <div class="side__value" id="hud-lines">0</div>
+          </div>
+          <div class="side__box">
+            <div class="side__label">Score</div>
+            <div class="side__value" id="hud-score">0</div>
+          </div>
+        </aside>
+      </div>
+
+      <p class="session__hint">Focus on the shapes. Let the rest of your system settle.
+        <span class="session__keys">Arrow keys move &amp; rotate &middot; Space drops &middot; P pauses</span>
+      </p>
+
+      <div class="pads" role="group" aria-label="Touch controls">
+        <button class="btn" type="button" data-pad="left"   aria-label="Move left"><span class="glyph" aria-hidden="true">&#9664;</span>Left</button>
+        <button class="btn" type="button" data-pad="rotate" aria-label="Rotate piece"><span class="glyph" aria-hidden="true">&#8635;</span>Rotate</button>
+        <button class="btn" type="button" data-pad="right"  aria-label="Move right"><span class="glyph" aria-hidden="true">&#9654;</span>Right</button>
+        <button class="btn" type="button" data-pad="drop"   aria-label="Drop piece"><span class="glyph" aria-hidden="true">&#9660;</span>Drop</button>
+        <button class="btn" type="button" data-pad="pause"  aria-label="Pause"><span class="glyph" aria-hidden="true">&#10073;&#10073;</span>Pause</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PHASE 3 — POST-RESET TRANSITION
+       ==================================================================== -->
+  <section class="screen" id="screen-complete" aria-labelledby="complete-title" tabindex="-1">
+    <p class="eyebrow">First Responder Wellness</p>
+    <h1 id="complete-title">Reset Complete</h1>
+
+    <div class="card">
+      <p>Take a moment before returning to your next task. Notice your breathing, muscle tension,
+        and level of activation.</p>
+      <!-- Reflection prompts are display-only by design: no inputs exist and
+           nothing is captured, stored, or transmitted. -->
+      <ol class="reflect-list">
+        <li>Is my breathing slower, faster, or unchanged?</li>
+        <li>Where am I still holding tension?</li>
+        <li>What is the next steady action I need to take?</li>
+      </ol>
+      <p class="notice" style="margin-top:16px">If distress remains elevated, do not push through it
+        alone. Consider contacting peer support, a trusted supervisor or teammate, chaplain support,
+        or a qualified mental health professional.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn--primary" id="again-btn" type="button">Play Again</button>
+      <button class="btn" id="return-btn" type="button">Return to Resource App</button>
+      <button class="btn" id="resources-btn" type="button">View Support Resources</button>
+    </div>
+  </section>
+</div>
+
+<!-- ======================================================================
+     DIALOGS
+     ====================================================================== -->
+<div class="veil" id="veil-pause" role="dialog" aria-modal="true" aria-labelledby="dlg-pause-t">
+  <div class="dialog">
+    <h2 id="dlg-pause-t">Paused</h2>
+    <p>Take whatever time you need. The countdown is paused too.</p>
+    <div class="actions">
+      <button class="btn btn--primary" id="resume-btn" type="button" data-autofocus>Resume</button>
+      <button class="btn btn--quiet btn--caution" id="pause-end-btn" type="button">End game now</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil-restart" role="dialog" aria-modal="true" aria-labelledby="dlg-restart-t">
+  <div class="dialog">
+    <h2 id="dlg-restart-t">Start over?</h2>
+    <p>This clears the board and restarts the 10-minute countdown.</p>
+    <div class="actions">
+      <button class="btn btn--primary" id="restart-yes" type="button">Restart</button>
+      <button class="btn btn--quiet" id="restart-no" type="button" data-autofocus>Keep playing</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil-timeup" role="dialog" aria-modal="true" aria-labelledby="dlg-timeup-t">
+  <div class="dialog">
+    <h2 id="dlg-timeup-t">Ten minutes complete</h2>
+    <p>That&rsquo;s the full reset window &mdash; this activity is designed to be brief and
+      contained rather than open-ended.</p>
+    <p class="fine">Keep playing if it&rsquo;s still helping you settle, or move on to the wrap-up.</p>
+    <div class="actions">
+      <button class="btn btn--quiet" id="timeup-continue" type="button">Keep playing</button>
+      <button class="btn btn--primary" id="timeup-finish" type="button" data-autofocus>Finish &amp; reflect</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil-filled" role="dialog" aria-modal="true" aria-labelledby="dlg-filled-t">
+  <div class="dialog">
+    <h2 id="dlg-filled-t">The board filled up</h2>
+    <p>The stack reached the top &mdash; no problem. This isn&rsquo;t about performance.</p>
+    <div class="actions">
+      <button class="btn btn--primary" id="filled-continue" type="button" data-autofocus>Clear board &amp; continue</button>
+      <button class="btn btn--quiet" id="filled-finish" type="button">Finish &amp; reflect</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   10-MINUTE VISUAL RESET — application script
+
+   Module map (single file, cleanly separated for future PWA extraction):
+     Config          — tuning constants in one place
+     ThemeManager    — dark/light, in-memory only (no persistence by design)
+     ScreenManager   — phase transitions + focus management
+     DialogManager   — modal open/close, focus trap, Escape handling
+     BreathingGuide  — 4-7-8 visual cue, 3 cycles
+     Engine          — pure game rules: 7 tetrominoes, 7-bag, SRS wall kicks,
+                       lock delay support, line clears, gentle levels
+     BoardRenderer   — HiDPI canvas drawing (well + next preview)
+     SessionTimer    — wall-clock-accurate 10-minute countdown
+     InputController — keyboard (with DAS repeat) + touch pads (hold repeat)
+     EmbedAdapter    — iframe/orientation resize + parent postMessage
+     App             — conductor: state machine + render loop
+
+   PRIVACY: no storage, no cookies, no network, no analytics, no logging.
+   ========================================================================== */
+(function () {
+"use strict";
+
+/* ------------------------------------------------------------------------ */
+/* Config                                                                    */
+/* ------------------------------------------------------------------------ */
+const Config = {
+  COLS: 10,
+  ROWS: 20,
+  SESSION_MS: 10 * 60 * 1000,   // the 10-minute window
+  LOCK_DELAY_MS: 500,           // grace period once a piece touches down
+  MAX_LOCK_RESETS: 15,          // movement can extend lock delay this many times
+  CLEAR_ANIM_MS: 190,           // gentle fade-out for cleared rows (no flash)
+  DAS_MS: 180,                  // keyboard delayed-auto-shift
+  ARR_MS: 55,                   // keyboard auto-repeat rate
+  SOFT_MS: 45,                  // held soft-drop rate
+  PAD_HOLD_MS: 220,             // touch hold before repeat starts
+  PAD_REPEAT_MS: 70,            // touch repeat rate
+  // Replace with your organization's resource page:
+  SUPPORT_URL: "https://988lifeline.org/"
+};
+
+const reducedMotion = window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const byId = (id) => document.getElementById(id);
+
+/* ------------------------------------------------------------------------ */
+/* ThemeManager — no persistence, honors OS preference on load               */
+/* ------------------------------------------------------------------------ */
+const ThemeManager = {
+  listeners: [],
+  init() {
+    const light = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: light)").matches;
+    this.set(light ? "light" : "dark");
+    byId("theme-btn").addEventListener("click", () => {
+      this.set(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+    });
+  },
+  set(mode) {
+    document.documentElement.dataset.theme = mode;
+    byId("theme-glyph").textContent = mode === "light" ? "☀" : "☾";
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = mode === "light" ? "#eef1f3" : "#10151a";
+    this.listeners.forEach((fn) => fn(mode));
+  },
+  onChange(fn) { this.listeners.push(fn); }
+};
+
+/* ------------------------------------------------------------------------ */
+/* ScreenManager                                                             */
+/* ------------------------------------------------------------------------ */
+const ScreenManager = {
+  ids: { intro: "screen-intro", session: "screen-session", complete: "screen-complete" },
+  current: "intro",
+  show(name) {
+    for (const key of Object.keys(this.ids)) {
+      byId(this.ids[key]).classList.toggle("is-active", key === name);
+    }
+    this.current = name;
+    byId("app").scrollTop = 0;
+    byId(this.ids[name]).focus({ preventScroll: true });
+    EmbedAdapter.postSize();
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* DialogManager — focus trap + Escape routing                               */
+/* ------------------------------------------------------------------------ */
+const DialogManager = {
+  current: null,
+  escapeActions: {},   // veil id -> fn
+  lastFocus: null,
+  open(id) {
+    this.lastFocus = document.activeElement;
+    this.current = id;
+    const veil = byId(id);
+    veil.classList.add("is-open");
+    const target = veil.querySelector("[data-autofocus]") || veil.querySelector("button");
+    if (target) target.focus();
+  },
+  close() {
+    if (!this.current) return;
+    byId(this.current).classList.remove("is-open");
+    this.current = null;
+    if (this.lastFocus && this.lastFocus.focus) {
+      this.lastFocus.focus({ preventScroll: true });
+    }
+  },
+  escape() {
+    const fn = this.current && this.escapeActions[this.current];
+    if (fn) fn();
+  },
+  init() {
+    // Shared focus trap for whichever dialog is open
+    document.addEventListener("keydown", (e) => {
+      if (!this.current || e.key !== "Tab") return;
+      const focusables = byId(this.current).querySelectorAll("button");
+      if (!focusables.length) return;
+      const first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* BreathingGuide — inhale 4 / hold 7 / exhale 8, three cycles               */
+/* ------------------------------------------------------------------------ */
+const BreathingGuide = {
+  PHASES: [
+    { label: "Inhale",     seconds: 4, scale: 1 },
+    { label: "Hold",       seconds: 7, scale: null },   // hold current size
+    { label: "Exhale",     seconds: 8, scale: 0.58 }
+  ],
+  CYCLES: 3,
+  timeouts: [],
+  active: false,
+
+  els() {
+    return { disc: byId("breath-disc"), phase: byId("breath-phase"),
+             meta: byId("breath-meta"), toggle: byId("breath-toggle") };
+  },
+  later(fn, ms) { this.timeouts.push(setTimeout(fn, ms)); },
+  clearTimers() { this.timeouts.forEach(clearTimeout); this.timeouts = []; },
+
+  start() {
+    const el = this.els();
+    this.clearTimers();
+    this.active = true;
+    el.toggle.textContent = "Stop";
+    this.phase(0, 0);
+  },
+  phase(cycle, idx) {
+    if (!this.active) return;
+    if (cycle >= this.CYCLES) { this.finish(); return; }
+    if (idx >= this.PHASES.length) { this.phase(cycle + 1, 0); return; }
+
+    const el = this.els();
+    const p = this.PHASES[idx];
+    el.phase.textContent = p.label;
+
+    // Transform-only scaling: composited, stays smooth inside iframes.
+    if (p.scale !== null && !reducedMotion) {
+      el.disc.style.transition = "transform " + p.seconds + "s cubic-bezier(0.42, 0, 0.4, 1)";
+      void el.disc.offsetWidth;   // commit the new duration before scaling
+      el.disc.style.transform = "scale(" + p.scale + ")";
+    }
+
+    // Per-second counter (visual only; the phase label is the live region)
+    for (let s = 0; s < p.seconds; s++) {
+      const left = p.seconds - s;
+      this.later(() => {
+        if (this.active) {
+          el.meta.textContent = left + "s · cycle " + (cycle + 1) + " of " + this.CYCLES;
+        }
+      }, s * 1000);
+    }
+    this.later(() => this.phase(cycle, idx + 1), p.seconds * 1000);
+  },
+  finish() {
+    const el = this.els();
+    this.clearTimers();
+    this.active = false;
+    el.disc.style.transition = "transform 0.8s ease";
+    el.disc.style.transform = "scale(0.58)";
+    el.phase.textContent = "";
+    el.meta.textContent = "Complete — begin whenever you’re ready";
+    el.toggle.textContent = "Repeat breathing cue";
+  },
+  cancel() {
+    if (!this.active) return;
+    const el = this.els();
+    this.clearTimers();
+    this.active = false;
+    el.disc.style.transition = "transform 0.6s ease";
+    el.disc.style.transform = "scale(0.58)";
+    el.phase.textContent = "";
+    el.meta.textContent = this.CYCLES + " cycles · about one minute";
+    el.toggle.textContent = "Start breathing cue";
+  },
+  init() {
+    byId("breath-toggle").addEventListener("click", () => {
+      this.active ? this.cancel() : this.start();
+    });
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* Engine — pure game rules (no DOM)                                         */
+/*                                                                           */
+/* Classic seven tetrominoes, 7-bag randomizer, SRS-style clockwise          */
+/* rotation with standard wall-kick tables, guideline-style scoring, and a   */
+/* deliberately gentle gravity curve.                                        */
+/* ------------------------------------------------------------------------ */
+const PIECE_DEFS = {
+  I: { box: 4, spawnY: -1, cells: [[0,1],[1,1],[2,1],[3,1]] },
+  J: { box: 3, spawnY: 0,  cells: [[0,0],[0,1],[1,1],[2,1]] },
+  L: { box: 3, spawnY: 0,  cells: [[2,0],[0,1],[1,1],[2,1]] },
+  O: { box: 2, spawnY: 0,  cells: [[0,0],[1,0],[0,1],[1,1]] },
+  S: { box: 3, spawnY: 0,  cells: [[1,0],[2,0],[0,1],[1,1]] },
+  T: { box: 3, spawnY: 0,  cells: [[1,0],[0,1],[1,1],[2,1]] },
+  Z: { box: 3, spawnY: 0,  cells: [[0,0],[1,0],[1,1],[2,1]] }
+};
+const PIECE_TYPES = Object.keys(PIECE_DEFS);
+
+// Precompute all four rotation states per piece (CW within bounding box)
+const PIECE_ROTS = {};
+for (const type of PIECE_TYPES) {
+  const def = PIECE_DEFS[type];
+  const states = [def.cells];
+  for (let r = 1; r < 4; r++) {
+    states.push(states[r - 1].map(([x, y]) => [def.box - 1 - y, x]));
+  }
+  PIECE_ROTS[type] = states;
+}
+
+// SRS wall-kick offsets, converted to screen coordinates (+y is down).
+// Index = current rotation state; entries tried in order for a CW turn.
+const KICKS_JLSTZ = [
+  [[0,0],[-1,0],[-1,-1],[0, 2],[-1, 2]],   // 0 -> R
+  [[0,0],[ 1,0],[ 1, 1],[0,-2],[ 1,-2]],   // R -> 2
+  [[0,0],[ 1,0],[ 1,-1],[0, 2],[ 1, 2]],   // 2 -> L
+  [[0,0],[-1,0],[-1, 1],[0,-2],[-1,-2]]    // L -> 0
+];
+const KICKS_I = [
+  [[0,0],[-2,0],[ 1,0],[-2, 1],[ 1,-2]],
+  [[0,0],[-1,0],[ 2,0],[-1,-2],[ 2, 1]],
+  [[0,0],[ 2,0],[-1,0],[ 2,-1],[-1, 2]],
+  [[0,0],[ 1,0],[-2,0],[ 1, 2],[-2,-1]]
+];
+const KICKS_O = [[[0,0]],[[0,0]],[[0,0]],[[0,0]]];
+
+class Engine {
+  constructor() { this.reset(); }
+
+  reset() {
+    this.grid = Array.from({ length: Config.ROWS },
+      () => new Array(Config.COLS).fill(null));
+    this.bag = [];
+    this.score = 0;
+    this.lines = 0;
+    this.level = 1;
+    this.gameOver = false;
+    this.pendingClear = null;
+    this.nextType = this.draw();
+    this.spawn();
+  }
+
+  draw() {
+    if (this.bag.length === 0) {
+      this.bag = PIECE_TYPES.slice();
+      for (let i = this.bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
+      }
+    }
+    return this.bag.pop();
+  }
+
+  spawn() {
+    const type = this.nextType;
+    this.nextType = this.draw();
+    const def = PIECE_DEFS[type];
+    this.piece = {
+      type,
+      rot: 0,
+      x: Math.floor((Config.COLS - def.box) / 2),
+      y: def.spawnY
+    };
+    if (this.collides(this.cellsAt(this.piece.rot), this.piece.x, this.piece.y)) {
+      this.piece = null;
+      this.gameOver = true;
+    }
+  }
+
+  cellsAt(rot) { return PIECE_ROTS[this.piece.type][rot]; }
+
+  collides(cells, ox, oy) {
+    for (const [cx, cy] of cells) {
+      const x = ox + cx, y = oy + cy;
+      if (x < 0 || x >= Config.COLS || y >= Config.ROWS) return true;
+      if (y >= 0 && this.grid[y][x]) return true;   // above the well is open space
+    }
+    return false;
+  }
+
+  tryMove(dx, dy) {
+    const p = this.piece;
+    if (!p) return false;
+    if (this.collides(this.cellsAt(p.rot), p.x + dx, p.y + dy)) return false;
+    p.x += dx; p.y += dy;
+    return true;
+  }
+
+  rotateCW() {
+    const p = this.piece;
+    if (!p) return false;
+    const nextRot = (p.rot + 1) % 4;
+    const cells = PIECE_ROTS[p.type][nextRot];
+    const table = p.type === "I" ? KICKS_I : p.type === "O" ? KICKS_O : KICKS_JLSTZ;
+    for (const [dx, dy] of table[p.rot]) {
+      if (!this.collides(cells, p.x + dx, p.y + dy)) {
+        p.rot = nextRot; p.x += dx; p.y += dy;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isGrounded() {
+    const p = this.piece;
+    return !!p && this.collides(this.cellsAt(p.rot), p.x, p.y + 1);
+  }
+
+  /** Stamp the active piece into the grid. Returns fully-cleared row indices
+      (collapse is deferred so the UI can fade them first). */
+  lock() {
+    const p = this.piece;
+    let overflowed = false;
+    for (const [cx, cy] of this.cellsAt(p.rot)) {
+      const x = p.x + cx, y = p.y + cy;
+      if (y < 0) { overflowed = true; continue; }
+      this.grid[y][x] = p.type;
+    }
+    this.piece = null;
+
+    const rows = [];
+    for (let y = 0; y < Config.ROWS; y++) {
+      if (this.grid[y].every(Boolean)) rows.push(y);
+    }
+    if (overflowed) this.gameOver = true;
+    if (rows.length) {
+      this.pendingClear = rows;
+    } else if (!this.gameOver) {
+      this.spawn();
+    }
+    return rows;
+  }
+
+  /** Collapse previously-marked rows, apply scoring, spawn the next piece. */
+  finishClear() {
+    const rows = new Set(this.pendingClear || []);
+    this.pendingClear = null;
+    if (rows.size) {
+      this.grid = this.grid.filter((_, i) => !rows.has(i));
+      while (this.grid.length < Config.ROWS) {
+        this.grid.unshift(new Array(Config.COLS).fill(null));
+      }
+      this.score += [0, 100, 300, 500, 800][rows.size] * this.level;
+      this.lines += rows.size;
+      this.level = Math.floor(this.lines / 10) + 1;
+    }
+    if (!this.gameOver) this.spawn();
+  }
+
+  /** Gravity interval — starts unhurried, tightens gently, never frantic. */
+  gravityMs() {
+    return Math.max(130, Math.round(880 * Math.pow(0.86, this.level - 1)));
+  }
+
+  ghostY() {
+    const p = this.piece;
+    if (!p) return null;
+    const cells = this.cellsAt(p.rot);
+    let y = p.y;
+    while (!this.collides(cells, p.x, y + 1)) y++;
+    return y;
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* BoardRenderer — HiDPI canvas drawing                                      */
+/* ------------------------------------------------------------------------ */
+const BoardRenderer = {
+  cell: 22,
+  palette: null,
+
+  init() {
+    this.well = byId("well");
+    this.wctx = this.well.getContext("2d");
+    this.preview = byId("preview");
+    this.pctx = this.preview.getContext("2d");
+    this.refreshPalette();
+    ThemeManager.onChange(() => this.refreshPalette());
+  },
+
+  refreshPalette() {
+    const css = getComputedStyle(document.documentElement);
+    const read = (name) => css.getPropertyValue(name).trim();
+    this.palette = {
+      board: read("--board"),
+      grid:  read("--grid-line"),
+      cells: Object.fromEntries(
+        PIECE_TYPES.map((t) => [t, read("--cell-" + t.toLowerCase())]))
+    };
+  },
+
+  /** Fit the well into the given CSS-pixel box, preserving crisp cells. */
+  fit(availW, availH) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.cell = Math.max(11, Math.min(
+      Math.floor(availW / Config.COLS),
+      Math.floor(availH / Config.ROWS)));
+    const w = this.cell * Config.COLS;
+    const h = this.cell * Config.ROWS;
+    this.well.style.width = w + "px";
+    this.well.style.height = h + "px";
+    this.well.width = Math.round(w * dpr);
+    this.well.height = Math.round(h * dpr);
+    this.wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const pw = 88, ph = 56;
+    this.preview.style.width = pw + "px";
+    this.preview.style.height = ph + "px";
+    this.preview.width = Math.round(pw * dpr);
+    this.preview.height = Math.round(ph * dpr);
+    this.pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  },
+
+  path(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  },
+
+  block(ctx, px, py, size, fill, alpha, ghost) {
+    const pad = Math.max(1, size * 0.07);
+    const s = size - pad * 2;
+    const r = Math.max(2, size * 0.18);
+    ctx.globalAlpha = alpha;
+    if (ghost) {
+      ctx.strokeStyle = fill;
+      ctx.lineWidth = Math.max(1.25, size * 0.07);
+      this.path(ctx, px + pad, py + pad, s, s, r);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = fill;
+      this.path(ctx, px + pad, py + pad, s, s, r);
+      ctx.fill();
+      ctx.globalAlpha = alpha * 0.12;      // soft sheen, not gloss
+      ctx.fillStyle = "#ffffff";
+      this.path(ctx, px + pad, py + pad, s, s * 0.42, r);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  /** Full-frame redraw. clearing = { rows:Set, progress:0..1 } | null */
+  draw(engine, clearing) {
+    const ctx = this.wctx, c = this.cell, pal = this.palette;
+    const W = c * Config.COLS, H = c * Config.ROWS;
+
+    ctx.fillStyle = pal.board;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = pal.grid;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 1; x < Config.COLS; x++) {
+      ctx.moveTo(x * c + 0.5, 0); ctx.lineTo(x * c + 0.5, H);
+    }
+    for (let y = 1; y < Config.ROWS; y++) {
+      ctx.moveTo(0, y * c + 0.5); ctx.lineTo(W, y * c + 0.5);
+    }
+    ctx.stroke();
+
+    for (let y = 0; y < Config.ROWS; y++) {
+      // Cleared rows fade out gently — never a bright flash
+      const alpha = clearing && clearing.rows.has(y)
+        ? Math.max(0, 1 - clearing.progress) : 1;
+      if (alpha === 0) continue;
+      for (let x = 0; x < Config.COLS; x++) {
+        const t = engine.grid[y][x];
+        if (t) this.block(ctx, x * c, y * c, c, pal.cells[t], alpha, false);
+      }
+    }
+
+    const p = engine.piece;
+    if (p) {
+      const cells = PIECE_ROTS[p.type][p.rot];
+      const gy = engine.ghostY();
+      if (gy !== null && gy !== p.y) {
+        for (const [cx, cy] of cells) {
+          const y = gy + cy;
+          if (y >= 0) this.block(ctx, (p.x + cx) * c, y * c, c, pal.cells[p.type], 0.4, true);
+        }
+      }
+      for (const [cx, cy] of cells) {
+        const y = p.y + cy;
+        if (y >= 0) this.block(ctx, (p.x + cx) * c, y * c, c, pal.cells[p.type], 1, false);
+      }
+    }
+  },
+
+  drawNext(type) {
+    const ctx = this.pctx;
+    ctx.clearRect(0, 0, 88, 56);
+    if (!type) return;
+    const cells = PIECE_ROTS[type][0];
+    const size = 15;
+    let minX = 9, maxX = 0, minY = 9, maxY = 0;
+    for (const [x, y] of cells) {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    const ox = (88 - (maxX - minX + 1) * size) / 2 - minX * size;
+    const oy = (56 - (maxY - minY + 1) * size) / 2 - minY * size;
+    for (const [x, y] of cells) {
+      this.block(ctx, ox + x * size, oy + y * size, size, this.palette.cells[type], 1, false);
+    }
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* SessionTimer — countdown driven by clamped wall-clock deltas              */
+/* ------------------------------------------------------------------------ */
+const SessionTimer = {
+  remaining: Config.SESSION_MS,
+  expired: false,
+  lastShown: "",
+
+  reset() {
+    this.remaining = Config.SESSION_MS;
+    this.expired = false;
+    this.render();
+  },
+  /** Advance by dt ms. Returns true exactly once, at expiry. */
+  advance(dt) {
+    if (this.expired) return false;
+    this.remaining -= dt;
+    if (this.remaining <= 0) {
+      this.remaining = 0;
+      this.expired = true;
+      this.render();
+      return true;
+    }
+    this.render();
+    return false;
+  },
+  render() {
+    const total = Math.ceil(this.remaining / 1000);
+    const text = Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
+    if (text !== this.lastShown) {           // touch the DOM only on change
+      this.lastShown = text;
+      byId("clock-value").textContent = text;
+      byId("clock").classList.toggle("is-low", this.remaining <= 60000 && this.remaining > 0);
+    }
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* InputController — keyboard DAS + touch-pad hold repeat                    */
+/* Emits intents: left | right | rotate | soft | hard | pause               */
+/* ------------------------------------------------------------------------ */
+const InputController = {
+  held: new Map(),   // intent -> next-repeat timestamp
+  dispatch: null,
+
+  init(dispatch) {
+    this.dispatch = dispatch;
+
+    document.addEventListener("keydown", (e) => this.onKeyDown(e), { passive: false });
+    document.addEventListener("keyup", (e) => this.onKeyUp(e));
+
+    // Touch pads
+    const pads = document.querySelectorAll("[data-pad]");
+    pads.forEach((btn) => this.bindPad(btn));
+    document.querySelector(".pads").addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Mouse/touch clicks on session buttons shouldn't steal Space/Enter from
+    // gameplay afterwards; keyboard activations (detail === 0) keep focus.
+    document.querySelectorAll("#screen-session button").forEach((btn) => {
+      btn.addEventListener("click", (e) => { if (e.detail > 0) btn.blur(); });
+    });
+  },
+
+  keyIntent(key) {
+    switch (key) {
+      case "ArrowLeft":  return "left";
+      case "ArrowRight": return "right";
+      case "ArrowUp":    return "rotate";
+      case "ArrowDown":  return "soft";
+      case " ":          return "hard";
+      case "p": case "P": return "pause";
+      default: return null;
+    }
+  },
+
+  onKeyDown(e) {
+    if (DialogManager.current) {
+      if (e.key === "Escape") { e.preventDefault(); DialogManager.escape(); }
+      return;
+    }
+    if (ScreenManager.current !== "session") return;
+
+    // Let Space/Enter operate a focused button normally
+    const onControl = e.target instanceof Element && e.target.closest("button, a");
+    if ((e.key === " " || e.key === "Enter") && onControl) return;
+
+    const intent = this.keyIntent(e.key);
+    if (!intent) return;
+    e.preventDefault();
+    if (e.repeat) return;                       // our own DAS handles repeats
+
+    this.dispatch(intent);
+    if (intent === "left" || intent === "right" || intent === "soft") {
+      this.held.set(intent, performance.now() + Config.DAS_MS);
+    }
+  },
+
+  onKeyUp(e) {
+    const intent = this.keyIntent(e.key);
+    if (intent) this.held.delete(intent);
+  },
+
+  /** Called from the render loop while playing. */
+  processHeld(now) {
+    for (const [intent, nextAt] of this.held) {
+      if (now >= nextAt) {
+        this.dispatch(intent);
+        this.held.set(intent, now +
+          (intent === "soft" ? Config.SOFT_MS : Config.ARR_MS));
+      }
+    }
+  },
+  releaseAll() { this.held.clear(); },
+
+  bindPad(btn) {
+    const pad = btn.dataset.pad;
+    const intent = { left: "left", right: "right", rotate: "rotate",
+                     drop: "hard", pause: "pause" }[pad];
+    let holdT = null, repeatT = null;
+    const stop = () => {
+      clearTimeout(holdT); clearInterval(repeatT);
+      holdT = repeatT = null;
+    };
+    btn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();                      // suppress ghost mouse events
+      this.dispatch(intent);
+      if (intent === "left" || intent === "right") {
+        holdT = setTimeout(() => {
+          repeatT = setInterval(() => this.dispatch(intent), Config.PAD_REPEAT_MS);
+        }, Config.PAD_HOLD_MS);
+      }
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((ev) =>
+      btn.addEventListener(ev, stop));
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* EmbedAdapter — iframe sizing + orientation + parent messaging             */
+/* ------------------------------------------------------------------------ */
+const EmbedAdapter = {
+  onViewport: null,
+  _t: null,
+
+  init(onViewport) {
+    this.onViewport = onViewport;
+    const queue = () => {
+      clearTimeout(this._t);
+      this._t = setTimeout(() => { this.onViewport(); this.postSize(); }, 110);
+    };
+    window.addEventListener("resize", queue, { passive: true });
+    // Orientation changes need extra settle time before dimensions are final
+    window.addEventListener("orientationchange", () => setTimeout(queue, 250));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", queue, { passive: true });
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(queue).observe(byId("play-zone"));
+    }
+  },
+
+  embedded() {
+    try { return window.parent && window.parent !== window; }
+    catch (_) { return false; }
+  },
+
+  /** Optional hint for host pages that auto-size their iframe. */
+  postSize() {
+    if (!this.embedded()) return;
+    try {
+      window.parent.postMessage({
+        type: "visual-reset:size",
+        height: document.body.scrollHeight
+      }, "*");
+    } catch (_) { /* cross-origin parent — fine, silently skip */ }
+  },
+
+  notifyReturn() {
+    if (!this.embedded()) return;
+    try { window.parent.postMessage({ type: "visual-reset:return" }, "*"); }
+    catch (_) { /* ignore */ }
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* App — conductor                                                           */
+/* States: idle | playing | paused | dialog | ended                          */
+/* ------------------------------------------------------------------------ */
+const App = {
+  state: "idle",
+  engine: new Engine(),
+  rafId: null,
+  lastTs: null,
+  gravAcc: 0,
+  groundedMs: 0,
+  lockResets: 0,
+  clearing: null,     // { rows:Set, start:number }
+
+  announce(text) { byId("sr-status").textContent = text; },
+
+  /* ---- lifecycle -------------------------------------------------------- */
+  begin() {
+    BreathingGuide.cancel();
+    this.engine.reset();
+    SessionTimer.reset();
+    this.resetPieceState();
+    this.clearing = null;
+    ScreenManager.show("session");
+    // Two frames so the grid layout settles before we measure the play zone
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      this.refit();
+      this.state = "playing";
+      this.startLoop();
+    }));
+  },
+
+  endSession() {
+    this.stopLoop();
+    DialogManager.close();
+    InputController.releaseAll();
+    this.state = "ended";
+    ScreenManager.show("complete");
+    this.announce("Reset complete.");
+  },
+
+  restart() {
+    this.engine.reset();
+    SessionTimer.reset();
+    this.resetPieceState();
+    this.clearing = null;
+    this.syncHud();
+    this.render();
+  },
+
+  resetPieceState() {
+    this.gravAcc = 0;
+    this.groundedMs = 0;
+    this.lockResets = 0;
+    this.syncHud();
+  },
+
+  /* ---- pause / dialogs --------------------------------------------------- */
+  pause() {
+    if (this.state !== "playing") return;
+    this.stopLoop();
+    InputController.releaseAll();
+    this.state = "paused";
+    DialogManager.open("veil-pause");
+    this.announce("Paused.");
+  },
+  resume() {
+    DialogManager.close();
+    this.state = "playing";
+    this.startLoop();
+    this.announce("Resumed.");
+  },
+  openDialog(id) {
+    this.stopLoop();
+    InputController.releaseAll();
+    this.state = "dialog";
+    DialogManager.open(id);
+  },
+  closeDialogAndPlay() {
+    DialogManager.close();
+    this.state = "playing";
+    this.startLoop();
+  },
+
+  /* ---- render loop -------------------------------------------------------- */
+  startLoop() {
+    this.lastTs = null;
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.rafId = requestAnimationFrame(this.loop);
+  },
+  stopLoop() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.rafId = null;
+  },
+
+  loop: null,   // bound in init()
+
+  tick(ts) {
+    if (this.state !== "playing") { this.rafId = null; return; }
+    this.rafId = requestAnimationFrame(this.loop);
+
+    const dt = Math.min(this.lastTs === null ? 16 : ts - this.lastTs, 1000);
+    this.lastTs = ts;
+
+    // Countdown (frozen automatically whenever the loop is stopped)
+    if (SessionTimer.advance(dt)) {
+      this.render();
+      this.openDialog("veil-timeup");
+      this.announce("Ten minutes complete.");
+      return;
+    }
+
+    // Row-clear fade window
+    if (this.clearing) {
+      const progress = reducedMotion ? 1
+        : (ts - this.clearing.start) / Config.CLEAR_ANIM_MS;
+      if (progress >= 1) {
+        this.engine.finishClear();
+        this.clearing = null;
+        this.resetPieceState();
+        if (this.engine.gameOver) { this.render(); this.boardFilled(); return; }
+      }
+      this.render(progress);
+      return;
+    }
+
+    InputController.processHeld(ts);
+    if (this.state !== "playing") return;   // an input may have paused us
+
+    const engine = this.engine;
+    if (engine.piece) {
+      if (engine.isGrounded()) {
+        this.gravAcc = 0;
+        this.groundedMs += dt;
+        if (this.groundedMs >= Config.LOCK_DELAY_MS) this.commitLock();
+      } else {
+        this.groundedMs = 0;
+        this.gravAcc += dt;
+        const step = engine.gravityMs();
+        while (this.gravAcc >= step) {
+          this.gravAcc -= step;
+          if (!engine.tryMove(0, 1)) break;
+        }
+      }
+    }
+    this.render();
+  },
+
+  commitLock() {
+    const rows = this.engine.lock();
+    this.groundedMs = 0;
+    this.lockResets = 0;
+    this.gravAcc = 0;
+    this.syncHud();
+    if (rows.length) {
+      this.clearing = { rows: new Set(rows), start: performance.now() };
+    } else if (this.engine.gameOver) {
+      this.render();
+      this.boardFilled();
+    }
+  },
+
+  boardFilled() {
+    this.openDialog("veil-filled");
+    this.announce("The board filled up.");
+  },
+
+  /* ---- input intents ------------------------------------------------------ */
+  handleIntent(intent) {
+    if (intent === "pause") {
+      if (this.state === "playing") this.pause();
+      else if (this.state === "paused") this.resume();
+      return;
+    }
+    if (this.state !== "playing" || this.clearing || !this.engine.piece) return;
+
+    const engine = this.engine;
+    const grounded = engine.isGrounded();
+    let acted = false;
+
+    switch (intent) {
+      case "left":   acted = engine.tryMove(-1, 0); break;
+      case "right":  acted = engine.tryMove(1, 0);  break;
+      case "rotate": acted = engine.rotateCW();     break;
+      case "soft":
+        if (grounded) { this.commitLock(); this.render(); return; }
+        if (engine.tryMove(0, 1)) { engine.score += 1; this.gravAcc = 0; }
+        break;
+      case "hard": {
+        let n = 0;
+        while (engine.tryMove(0, 1)) n++;
+        engine.score += n * 2;
+        this.commitLock();
+        this.render();
+        return;
+      }
+    }
+
+    // Successful movement on the ground extends lock delay (bounded)
+    if (acted && grounded && this.lockResets < Config.MAX_LOCK_RESETS) {
+      this.groundedMs = 0;
+      this.lockResets++;
+    }
+    this.render();
+  },
+
+  /* ---- drawing / layout --------------------------------------------------- */
+  render(clearProgress) {
+    BoardRenderer.draw(this.engine, this.clearing
+      ? { rows: this.clearing.rows, progress: clearProgress || 0 } : null);
+  },
+
+  syncHud() {
+    byId("hud-score").textContent = this.engine.score;
+    byId("hud-lines").textContent = this.engine.lines;
+    BoardRenderer.drawNext(this.engine.nextType);
+  },
+
+  refit() {
+    if (ScreenManager.current !== "session") return;
+    const zone = byId("play-zone");
+    const side = document.querySelector(".side");
+    if (zone.clientHeight < 80) {   // layout not settled yet — try next frame
+      requestAnimationFrame(() => this.refit());
+      return;
+    }
+    const availW = zone.clientWidth - side.offsetWidth - 14 - 18;
+    const availH = zone.clientHeight - 18;
+    BoardRenderer.fit(availW, availH);
+    this.render();
+    this.syncHud();
+  },
+
+  /* ---- init ---------------------------------------------------------------- */
+  init() {
+    this.loop = this.tick.bind(this);
+
+    ThemeManager.init();
+    DialogManager.init();
+    BreathingGuide.init();
+    BoardRenderer.init();
+    InputController.init((intent) => this.handleIntent(intent));
+    EmbedAdapter.init(() => this.refit());
+
+    ThemeManager.onChange(() => {
+      if (ScreenManager.current === "session") { this.render(); this.syncHud(); }
+    });
+
+    /* Phase 1 */
+    byId("begin-btn").addEventListener("click", () => this.begin());
+
+    /* Session bar */
+    byId("pause-btn").addEventListener("click", () => this.handleIntent("pause"));
+    byId("restart-btn").addEventListener("click", () => {
+      if (this.state === "playing") this.openDialog("veil-restart");
+    });
+    byId("end-btn").addEventListener("click", () => this.endSession());
+
+    /* Pause dialog */
+    byId("resume-btn").addEventListener("click", () => this.resume());
+    byId("pause-end-btn").addEventListener("click", () => this.endSession());
+    DialogManager.escapeActions["veil-pause"] = () => this.resume();
+
+    /* Restart dialog */
+    byId("restart-yes").addEventListener("click", () => {
+      DialogManager.close();
+      this.restart();
+      this.state = "playing";
+      this.startLoop();
+    });
+    byId("restart-no").addEventListener("click", () => this.closeDialogAndPlay());
+    DialogManager.escapeActions["veil-restart"] = () => this.closeDialogAndPlay();
+
+    /* Ten-minute dialog */
+    byId("timeup-continue").addEventListener("click", () => this.closeDialogAndPlay());
+    byId("timeup-finish").addEventListener("click", () => this.endSession());
+    DialogManager.escapeActions["veil-timeup"] = () => this.closeDialogAndPlay();
+
+    /* Board-filled dialog */
+    byId("filled-continue").addEventListener("click", () => {
+      // Fresh board, but the session countdown keeps whatever time remains
+      this.engine.reset();
+      this.resetPieceState();
+      this.clearing = null;
+      this.closeDialogAndPlay();
+    });
+    byId("filled-finish").addEventListener("click", () => this.endSession());
+    DialogManager.escapeActions["veil-filled"] = () => {
+      byId("filled-continue").click();
+    };
+
+    /* Phase 3 */
+    byId("again-btn").addEventListener("click", () => this.begin());
+    byId("return-btn").addEventListener("click", () => {
+      EmbedAdapter.notifyReturn();
+      this.state = "idle";
+      ScreenManager.show("intro");
+    });
+    byId("resources-btn").addEventListener("click", () => {
+      window.open(Config.SUPPORT_URL, "_blank", "noopener");
+    });
+
+    /* Auto-pause when the tab/app is backgrounded mid-session */
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && this.state === "playing") this.pause();
+    });
+
+    /* Keep browser gestures away from the well and pads during play */
+    document.addEventListener("touchmove", (e) => {
+      if (ScreenManager.current === "session" &&
+          e.target instanceof Element &&
+          e.target.closest(".board-frame, .pads, .session__bar")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    EmbedAdapter.postSize();
+  }
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => App.init());
+} else {
+  App.init();
+}
+
+})();
+</script>
+</body>
+</html>
