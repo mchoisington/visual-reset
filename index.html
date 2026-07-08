@@ -389,6 +389,10 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
   background-color: var(--accent-wash);   /* animatable fill; JS shifts the hue per phase */
   transform: scale(0.58);
   will-change: transform, background-color, border-color;
+  cursor: pointer;                        /* the circle itself toggles start/stop */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .breath__phase {
   position: absolute;
@@ -1124,9 +1128,10 @@ function createBreathing(ids) {
       el.toggle.textContent = "Start breathing cue";
     },
     init() {
-      byId(ids.toggle).addEventListener("click", () => {
-        self.active ? self.cancel() : self.start();
-      });
+      const toggle = () => { self.active ? self.cancel() : self.start(); };
+      byId(ids.toggle).addEventListener("click", toggle);
+      // The circle itself also starts/stops the cue (the button stays as-is).
+      byId(ids.disc).addEventListener("click", toggle);
     }
   };
   return self;
