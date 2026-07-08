@@ -21,7 +21,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="color-scheme" content="dark light" />
 <meta name="theme-color" content="#10151a" />
-<meta name="description" content="10-Minute Visual Reset — a brief visual-spatial grounding activity for first responder personnel." />
+<meta name="description" content="10-Minute Visual Reset — a brief visual-spatial grounding activity." />
+<!-- PWA hints (progressive enhancement). These reference sibling files that
+     exist when the app is hosted; in single-file/sandboxed contexts they
+     simply 404 and the app runs unchanged. -->
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Visual Reset" />
 <title>10-Minute Visual Reset</title>
 <style>
 /* ==========================================================================
@@ -182,6 +190,7 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
   text-transform: uppercase;
   color: var(--ink-dim);
 }
+.eyebrow:empty { display: none; }   /* collapse cleanly when no label is set */
 .fine { font-size: 0.85rem; color: var(--ink-dim); }
 
 /* ==========================================================================
@@ -316,10 +325,9 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
   width: 100%; height: 100%;
   border-radius: 50%;
   border: 2px solid var(--accent);
-  background: radial-gradient(circle at 50% 44%, var(--accent-wash), transparent 74%),
-              var(--accent-wash);
+  background-color: var(--accent-wash);   /* animatable fill; JS shifts the hue per phase */
   transform: scale(0.58);
-  will-change: transform;           /* GPU-composited: smooth inside iframes */
+  will-change: transform, background-color, border-color;
 }
 .breath__phase {
   position: absolute;
@@ -346,8 +354,11 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
   width: 100%;
   display: grid;
   gap: 10px;
+  /* Cap the single column to the container width so the play row can never
+     size to its content and overflow the viewport on narrow phones. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto auto;
-  grid-template-areas: "bar" "play" "hint" "pads";
+  grid-template-areas: "bar" "play" "hint" "controls";
 }
 
 .session__bar {
@@ -374,6 +385,7 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
 .play-zone {
   grid-area: play;
   min-height: 0;
+  min-width: 0;                       /* allow the flex row to stay within track */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,6 +423,18 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
 .side__value { font-size: 1.14rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 #preview { display: block; margin: 0 auto; }
 
+/* "Why this?" info button under the Score box — opens the research article */
+.side__why {
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding: 8px 6px;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: normal;
+  text-align: center;
+}
+
 .session__hint {
   grid-area: hint;
   margin: 0;
@@ -429,24 +453,63 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
 }
 @media (pointer: coarse) { .session__keys { display: none; } }
 
-/* Touch pads */
-.pads {
-  grid-area: pads;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-}
-.pads .btn {
+/* Controls area — the single directional pad, centered */
+.controls {
+  grid-area: controls;
+  display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 2px;
-  font-size: 0.78rem;
-  min-height: var(--tap);
+  align-items: center;
+  gap: 12px;
 }
-.pads .glyph { font-size: 1.32rem; line-height: 1.1; }
+
+/* NES-style cross / "plus" directional pad — the sole game control on every
+   device. Mapping mirrors the keyboard: up = rotate, left/right = move,
+   down = soft drop. Pause is in the top bar. */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 58px);
+  grid-template-rows: repeat(3, 58px);
+  gap: 5px;
+}
+/* Roomier targets for thumbs on touch devices */
+@media (pointer: coarse) {
+  .dpad { grid-template-columns: repeat(3, 66px); grid-template-rows: repeat(3, 66px); }
+}
+.dpad__btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 1.35rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
+  transition: background 120ms ease, border-color 120ms ease, transform 60ms ease;
+}
+.dpad__btn:hover { border-color: var(--accent); }
+.dpad__btn:active { transform: scale(0.93); background: var(--accent-wash); }
+.dpad__btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.dpad__up    { grid-area: 1 / 2 / 2 / 3; border-radius: 13px 13px 3px 3px; }
+.dpad__left  { grid-area: 2 / 1 / 3 / 2; border-radius: 13px 3px 3px 13px; }
+.dpad__right { grid-area: 2 / 3 / 3 / 4; border-radius: 3px 13px 13px 3px; }
+.dpad__down  { grid-area: 3 / 2 / 4 / 3; border-radius: 3px 3px 13px 13px; }
+.dpad__hub {
+  grid-area: 2 / 2 / 3 / 3;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+}
+.dpad__hub::after {
+  content: "";
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
 
 /* Landscape phones: board center, pads to the right for thumb reach */
 @media (orientation: landscape) and (max-height: 540px) {
@@ -454,20 +517,15 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.62
   .session {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas: "bar bar" "play pads";
+    grid-template-areas: "bar bar" "play controls";
     column-gap: 14px;
   }
   .session__hint { display: none; }
-  .pads {
-    grid-template-columns: repeat(2, minmax(66px, 88px));
-    align-content: center;
-    margin: 0;
-    max-width: none;
-  }
+  .controls { justify-content: center; }
 }
+/* Narrow phones: give the board more room by trimming the side panel */
+@media (max-width: 430px) { :root { --side-w: 90px; } }
 @media (max-width: 370px) {
-  .pads { gap: 7px; }
-  .pads .btn { font-size: 0.7rem; }
   .session__bar-btns .btn--small { padding: 0 10px; font-size: 0.78rem; }
 }
 
@@ -537,14 +595,14 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 1 — PRE-RESET GROUNDING
        ==================================================================== -->
   <section class="screen is-active" id="screen-intro" aria-labelledby="intro-title" tabindex="-1">
-    <p class="eyebrow">First Responder Wellness</p>
+    <p class="eyebrow" id="intro-eyebrow"></p>
     <h1 id="intro-title">10-Minute Visual Reset</h1>
 
     <div class="card">
       <p class="notice">Use this brief visual-spatial activity as a post-incident reset. It is not
-        therapy, crisis support, or medical treatment. If distress remains elevated, consider
-        contacting peer support, a supervisor, chaplain support, or a qualified mental health
-        professional.</p>
+        therapy, crisis support, or medical treatment. If distress remains elevated, reach out — to
+        peer support, a trusted supervisor or teammate, chaplain support, a close friend or partner,
+        or a qualified mental health professional.</p>
       <ul class="ground-list">
         <li>Take one slow breath before you begin.</li>
         <li>Notice your feet, your hands, and your breathing.</li>
@@ -588,7 +646,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
 
       <header class="session__bar">
         <div class="clock" id="clock" role="timer" aria-label="Time remaining">
-          <span class="clock__label">Remaining</span>
+          <span class="clock__label" id="clock-label">Remaining</span>
           <span class="clock__value" id="clock-value">10:00</span>
         </div>
         <div class="session__bar-btns">
@@ -615,6 +673,10 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
             <div class="side__label">Score</div>
             <div class="side__value" id="hud-score">0</div>
           </div>
+          <button class="btn btn--small side__why" id="side-why-btn" type="button"
+                  aria-label="Why play this game after a stressful event? Opens research article in a new tab">
+            Why play this after a stressful event?
+          </button>
         </aside>
       </div>
 
@@ -622,12 +684,17 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         <span class="session__keys">Arrow keys move &amp; rotate &middot; Space drops &middot; P pauses</span>
       </p>
 
-      <div class="pads" role="group" aria-label="Touch controls">
-        <button class="btn" type="button" data-pad="left"   aria-label="Move left"><span class="glyph" aria-hidden="true">&#9664;</span>Left</button>
-        <button class="btn" type="button" data-pad="rotate" aria-label="Rotate piece"><span class="glyph" aria-hidden="true">&#8635;</span>Rotate</button>
-        <button class="btn" type="button" data-pad="right"  aria-label="Move right"><span class="glyph" aria-hidden="true">&#9654;</span>Right</button>
-        <button class="btn" type="button" data-pad="drop"   aria-label="Drop piece"><span class="glyph" aria-hidden="true">&#9660;</span>Drop</button>
-        <button class="btn" type="button" data-pad="pause"  aria-label="Pause"><span class="glyph" aria-hidden="true">&#10073;&#10073;</span>Pause</button>
+      <div class="controls">
+        <!-- The single "plus" directional pad (NES-style), used on every device.
+             up = rotate, left/right = move, down = soft drop (tap = one row,
+             hold = keep descending). Pause lives in the top bar. -->
+        <div class="dpad" role="group" aria-label="Game controls">
+          <button class="dpad__btn dpad__up"    type="button" data-pad="rotate" aria-label="Rotate piece">&#8635;</button>
+          <button class="dpad__btn dpad__left"  type="button" data-pad="left"   aria-label="Move left">&#9664;</button>
+          <span class="dpad__hub" aria-hidden="true"></span>
+          <button class="dpad__btn dpad__right" type="button" data-pad="right"  aria-label="Move right">&#9654;</button>
+          <button class="dpad__btn dpad__down"  type="button" data-pad="soft"   aria-label="Soft drop (hold to keep descending)">&#9660;</button>
+        </div>
       </div>
     </div>
   </section>
@@ -636,7 +703,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 3 — POST-RESET TRANSITION
        ==================================================================== -->
   <section class="screen" id="screen-complete" aria-labelledby="complete-title" tabindex="-1">
-    <p class="eyebrow">First Responder Wellness</p>
+    <p class="eyebrow" id="complete-eyebrow"></p>
     <h1 id="complete-title">Reset Complete</h1>
 
     <div class="card">
@@ -649,13 +716,19 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         <li>Where am I still holding tension?</li>
         <li>What is the next steady action I need to take?</li>
       </ol>
-      <p class="notice" style="margin-top:16px">If distress remains elevated, do not push through it
-        alone. Consider contacting peer support, a trusted supervisor or teammate, chaplain support,
-        or a qualified mental health professional.</p>
+      <p class="notice" style="margin-top:16px">If distress stays elevated, don&rsquo;t carry it
+        alone — reaching out is a sign of strength, not weakness. Talk with someone you trust: peer
+        support, a trusted supervisor or teammate, chaplain support, a close friend or partner, or a
+        mental health professional experienced with first responders. If you&rsquo;re in crisis or
+        thinking about harming yourself, call or text <strong>988</strong> (the Suicide &amp; Crisis
+        Lifeline) right now.</p>
     </div>
 
     <div class="actions">
       <button class="btn btn--primary" id="again-btn" type="button">Play Again</button>
+      <button class="btn" id="again-untimed-btn" type="button">Play Again — No Timer</button>
+      <button class="btn" id="complete-breathe-btn" type="button">Breathing Cue Exercise</button>
+      <button class="btn" id="complete-why-btn" type="button">Why play this after a stressful event?</button>
       <button class="btn" id="return-btn" type="button">Return to Resource App</button>
       <button class="btn" id="resources-btn" type="button">View Support Resources</button>
     </div>
@@ -671,6 +744,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
     <p>Take whatever time you need. The countdown is paused too.</p>
     <div class="actions">
       <button class="btn btn--primary" id="resume-btn" type="button" data-autofocus>Resume</button>
+      <button class="btn" id="pause-breathe-btn" type="button">Breathing cue</button>
       <button class="btn btn--quiet btn--caution" id="pause-end-btn" type="button">End game now</button>
     </div>
   </div>
@@ -692,10 +766,12 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
     <h2 id="dlg-timeup-t">Ten minutes complete</h2>
     <p>That&rsquo;s the full reset window &mdash; this activity is designed to be brief and
       contained rather than open-ended.</p>
-    <p class="fine">Keep playing if it&rsquo;s still helping you settle, or move on to the wrap-up.</p>
+    <p class="fine">If it&rsquo;s still helping you settle, you can return to the board and keep
+      playing without a timer. Otherwise, move on to the wrap-up.</p>
     <div class="actions">
-      <button class="btn btn--quiet" id="timeup-continue" type="button">Keep playing</button>
+      <button class="btn btn--quiet" id="timeup-continue" type="button">Return to board &amp; continue</button>
       <button class="btn btn--primary" id="timeup-finish" type="button" data-autofocus>Finish &amp; reflect</button>
+      <button class="btn" id="timeup-why" type="button">Why play this after a stressful event?</button>
     </div>
   </div>
 </div>
@@ -707,6 +783,27 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
     <div class="actions">
       <button class="btn btn--primary" id="filled-continue" type="button" data-autofocus>Clear board &amp; continue</button>
       <button class="btn btn--quiet" id="filled-finish" type="button">Finish &amp; reflect</button>
+      <button class="btn" id="filled-why" type="button">Why play this after a stressful event?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Breathing cue overlay — available from Pause and from the wrap-up screen -->
+<div class="veil" id="veil-breathe" role="dialog" aria-modal="true" aria-labelledby="dlg-breathe-t">
+  <div class="dialog">
+    <h2 id="dlg-breathe-t">Breathing cue</h2>
+    <p class="fine">In for 4, hold for 7, out for 8 &mdash; three slow cycles. Optional.</p>
+    <div class="breath">
+      <div class="breath__stage">
+        <span class="breath__ring" aria-hidden="true"></span>
+        <div class="breath__disc" id="pb-disc" aria-hidden="true"></div>
+        <span class="breath__phase" id="pb-phase" aria-live="polite"></span>
+      </div>
+      <div class="breath__meta" id="pb-meta">3 cycles &middot; about one minute</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="pb-toggle" type="button" data-autofocus>Start</button>
+      <button class="btn btn--quiet" id="breathe-back" type="button">Back</button>
     </div>
   </div>
 </div>
@@ -720,7 +817,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
      ThemeManager    — dark/light, in-memory only (no persistence by design)
      ScreenManager   — phase transitions + focus management
      DialogManager   — modal open/close, focus trap, Escape handling
-     BreathingGuide  — 4-7-8 visual cue, 3 cycles
+     createBreathing — 4-7-8 visual cue factory (intro + pause/wrap-up)
      Engine          — pure game rules: 7 tetrominoes, 7-bag, SRS wall kicks,
                        lock delay support, line clears, gentle levels
      BoardRenderer   — HiDPI canvas drawing (well + next preview)
@@ -750,7 +847,10 @@ const Config = {
   PAD_HOLD_MS: 220,             // touch hold before repeat starts
   PAD_REPEAT_MS: 70,            // touch repeat rate
   // Replace with your organization's resource page:
-  SUPPORT_URL: "https://988lifeline.org/"
+  SUPPORT_URL: "https://988lifeline.org/",
+  // "Why play this?" — the foundational open-access study on visuospatial
+  // gameplay and intrusive memories (Holmes et al., PLoS ONE, 2009).
+  RESEARCH_URL: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
 };
 
 const reducedMotion = window.matchMedia &&
@@ -839,86 +939,109 @@ const DialogManager = {
 };
 
 /* ------------------------------------------------------------------------ */
-/* BreathingGuide — inhale 4 / hold 7 / exhale 8, three cycles               */
+/* Breathing — inhale 4 / hold 7 / exhale 8, three cycles.                   */
+/* Factory so the same cue can drive two independent widgets: the intro      */
+/* card and the in-session pause/wrap-up overlay.                            */
 /* ------------------------------------------------------------------------ */
-const BreathingGuide = {
-  PHASES: [
-    { label: "Inhale",     seconds: 4, scale: 1 },
-    { label: "Hold",       seconds: 7, scale: null },   // hold current size
-    { label: "Exhale",     seconds: 8, scale: 0.58 }
-  ],
-  CYCLES: 3,
-  timeouts: [],
-  active: false,
+function createBreathing(ids) {
+  const self = {
+    // Each phase carries a soft, low-saturation hue. The circle crossfades
+    // gently between them — sage-teal on the inhale, a calm blue-teal on the
+    // hold, and a soothing periwinkle on the exhale — then back again. All
+    // muted and slow (no flashing) to stay grounding rather than stimulating.
+    PHASES: [
+      { label: "Inhale", seconds: 4, scale: 1,    rgb: [122, 170, 152] },
+      { label: "Hold",   seconds: 7, scale: null, rgb: [131, 166, 176] },
+      { label: "Exhale", seconds: 8, scale: 0.58, rgb: [143, 158, 196] }
+    ],
+    CYCLES: 3,
+    timeouts: [],
+    active: false,
 
-  els() {
-    return { disc: byId("breath-disc"), phase: byId("breath-phase"),
-             meta: byId("breath-meta"), toggle: byId("breath-toggle") };
-  },
-  later(fn, ms) { this.timeouts.push(setTimeout(fn, ms)); },
-  clearTimers() { this.timeouts.forEach(clearTimeout); this.timeouts = []; },
+    els() {
+      return { disc: byId(ids.disc), phase: byId(ids.phase),
+               meta: byId(ids.meta), toggle: byId(ids.toggle) };
+    },
+    later(fn, ms) { self.timeouts.push(setTimeout(fn, ms)); },
+    clearTimers() { self.timeouts.forEach(clearTimeout); self.timeouts = []; },
 
-  start() {
-    const el = this.els();
-    this.clearTimers();
-    this.active = true;
-    el.toggle.textContent = "Stop";
-    this.phase(0, 0);
-  },
-  phase(cycle, idx) {
-    if (!this.active) return;
-    if (cycle >= this.CYCLES) { this.finish(); return; }
-    if (idx >= this.PHASES.length) { this.phase(cycle + 1, 0); return; }
+    start() {
+      const el = self.els();
+      self.clearTimers();
+      self.active = true;
+      el.toggle.textContent = "Stop";
+      self.phase(0, 0);
+    },
+    phase(cycle, idx) {
+      if (!self.active) return;
+      if (cycle >= self.CYCLES) { self.finish(); return; }
+      if (idx >= self.PHASES.length) { self.phase(cycle + 1, 0); return; }
 
-    const el = this.els();
-    const p = this.PHASES[idx];
-    el.phase.textContent = p.label;
+      const el = self.els();
+      const p = self.PHASES[idx];
+      el.phase.textContent = p.label;
 
-    // Transform-only scaling: composited, stays smooth inside iframes.
-    if (p.scale !== null && !reducedMotion) {
-      el.disc.style.transition = "transform " + p.seconds + "s cubic-bezier(0.42, 0, 0.4, 1)";
-      void el.disc.offsetWidth;   // commit the new duration before scaling
-      el.disc.style.transform = "scale(" + p.scale + ")";
+      // Scale + hue crossfade together over the phase duration. Transform is
+      // GPU-composited; the color transition is slow and non-flashing.
+      const [r, g, b] = p.rgb;
+      el.disc.style.transition =
+        "transform " + p.seconds + "s cubic-bezier(0.42, 0, 0.4, 1), " +
+        "background-color " + p.seconds + "s linear, border-color " + p.seconds + "s linear";
+      void el.disc.offsetWidth;   // commit the new durations before changing props
+      el.disc.style.borderColor = "rgb(" + r + "," + g + "," + b + ")";
+      el.disc.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",0.16)";
+      if (p.scale !== null && !reducedMotion) {
+        el.disc.style.transform = "scale(" + p.scale + ")";
+      }
+
+      // Per-second counter (visual only; the phase label is the live region)
+      for (let s = 0; s < p.seconds; s++) {
+        const left = p.seconds - s;
+        self.later(() => {
+          if (self.active) {
+            el.meta.textContent = left + "s · cycle " + (cycle + 1) + " of " + self.CYCLES;
+          }
+        }, s * 1000);
+      }
+      self.later(() => self.phase(cycle, idx + 1), p.seconds * 1000);
+    },
+    finish() {
+      const el = self.els();
+      self.clearTimers();
+      self.active = false;
+      el.disc.style.transition = "transform 0.8s ease, background-color 0.8s ease, border-color 0.8s ease";
+      el.disc.style.transform = "scale(0.58)";
+      el.disc.style.backgroundColor = "";   // revert to the resting accent tint
+      el.disc.style.borderColor = "";
+      el.phase.textContent = "";
+      el.meta.textContent = "Complete — begin whenever you’re ready";
+      el.toggle.textContent = "Repeat breathing cue";
+    },
+    cancel() {
+      const el = self.els();
+      self.clearTimers();
+      self.active = false;
+      el.disc.style.transition = "transform 0.6s ease, background-color 0.6s ease, border-color 0.6s ease";
+      el.disc.style.transform = "scale(0.58)";
+      el.disc.style.backgroundColor = "";
+      el.disc.style.borderColor = "";
+      el.phase.textContent = "";
+      el.meta.textContent = self.CYCLES + " cycles · about one minute";
+      el.toggle.textContent = "Start breathing cue";
+    },
+    init() {
+      byId(ids.toggle).addEventListener("click", () => {
+        self.active ? self.cancel() : self.start();
+      });
     }
+  };
+  return self;
+}
 
-    // Per-second counter (visual only; the phase label is the live region)
-    for (let s = 0; s < p.seconds; s++) {
-      const left = p.seconds - s;
-      this.later(() => {
-        if (this.active) {
-          el.meta.textContent = left + "s · cycle " + (cycle + 1) + " of " + this.CYCLES;
-        }
-      }, s * 1000);
-    }
-    this.later(() => this.phase(cycle, idx + 1), p.seconds * 1000);
-  },
-  finish() {
-    const el = this.els();
-    this.clearTimers();
-    this.active = false;
-    el.disc.style.transition = "transform 0.8s ease";
-    el.disc.style.transform = "scale(0.58)";
-    el.phase.textContent = "";
-    el.meta.textContent = "Complete — begin whenever you’re ready";
-    el.toggle.textContent = "Repeat breathing cue";
-  },
-  cancel() {
-    if (!this.active) return;
-    const el = this.els();
-    this.clearTimers();
-    this.active = false;
-    el.disc.style.transition = "transform 0.6s ease";
-    el.disc.style.transform = "scale(0.58)";
-    el.phase.textContent = "";
-    el.meta.textContent = this.CYCLES + " cycles · about one minute";
-    el.toggle.textContent = "Start breathing cue";
-  },
-  init() {
-    byId("breath-toggle").addEventListener("click", () => {
-      this.active ? this.cancel() : this.start();
-    });
-  }
-};
+const IntroBreathing = createBreathing({
+  disc: "breath-disc", phase: "breath-phase", meta: "breath-meta", toggle: "breath-toggle" });
+const PauseBreathing = createBreathing({
+  disc: "pb-disc", phase: "pb-phase", meta: "pb-meta", toggle: "pb-toggle" });
 
 /* ------------------------------------------------------------------------ */
 /* Engine — pure game rules (no DOM)                                         */
@@ -1216,14 +1339,8 @@ const BoardRenderer = {
 
     const p = engine.piece;
     if (p) {
+      // Active piece only — no ghost/landing outline (removed by request).
       const cells = PIECE_ROTS[p.type][p.rot];
-      const gy = engine.ghostY();
-      if (gy !== null && gy !== p.y) {
-        for (const [cx, cy] of cells) {
-          const y = gy + cy;
-          if (y >= 0) this.block(ctx, (p.x + cx) * c, y * c, c, pal.cells[p.type], 0.4, true);
-        }
-      }
       for (const [cx, cy] of cells) {
         const y = p.y + cy;
         if (y >= 0) this.block(ctx, (p.x + cx) * c, y * c, c, pal.cells[p.type], 1, false);
@@ -1256,16 +1373,27 @@ const BoardRenderer = {
 const SessionTimer = {
   remaining: Config.SESSION_MS,
   expired: false,
+  enabled: true,           // false = untimed "Free play" mode
   lastShown: "",
 
-  reset() {
+  /** @param {boolean} [enabled] whether to run the 10-minute countdown */
+  reset(enabled = true) {
+    this.enabled = enabled;
     this.remaining = Config.SESSION_MS;
-    this.expired = false;
+    this.expired = !enabled;   // untimed sessions never "expire"
+    this.lastShown = "";
+    this.render();
+  },
+  /** Switch a running session to untimed (used after the 10-minute prompt). */
+  setUntimed() {
+    this.enabled = false;
+    this.expired = true;
+    this.lastShown = "";
     this.render();
   },
   /** Advance by dt ms. Returns true exactly once, at expiry. */
   advance(dt) {
-    if (this.expired) return false;
+    if (!this.enabled || this.expired) return false;
     this.remaining -= dt;
     if (this.remaining <= 0) {
       this.remaining = 0;
@@ -1277,10 +1405,20 @@ const SessionTimer = {
     return false;
   },
   render() {
+    if (!this.enabled) {
+      if (this.lastShown !== "free") {
+        this.lastShown = "free";
+        byId("clock-label").textContent = "Mode";
+        byId("clock-value").textContent = "Free play";
+        byId("clock").classList.remove("is-low");
+      }
+      return;
+    }
     const total = Math.ceil(this.remaining / 1000);
     const text = Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
     if (text !== this.lastShown) {           // touch the DOM only on change
       this.lastShown = text;
+      byId("clock-label").textContent = "Remaining";
       byId("clock-value").textContent = text;
       byId("clock").classList.toggle("is-low", this.remaining <= 60000 && this.remaining > 0);
     }
@@ -1301,10 +1439,10 @@ const InputController = {
     document.addEventListener("keydown", (e) => this.onKeyDown(e), { passive: false });
     document.addEventListener("keyup", (e) => this.onKeyUp(e));
 
-    // Touch pads
+    // Touch pads (D-pad + secondary row both use [data-pad])
     const pads = document.querySelectorAll("[data-pad]");
     pads.forEach((btn) => this.bindPad(btn));
-    document.querySelector(".pads").addEventListener("contextmenu", (e) => e.preventDefault());
+    document.querySelector(".controls").addEventListener("contextmenu", (e) => e.preventDefault());
 
     // Mouse/touch clicks on session buttons shouldn't steal Space/Enter from
     // gameplay afterwards; keyboard activations (detail === 0) keep focus.
@@ -1367,7 +1505,8 @@ const InputController = {
   bindPad(btn) {
     const pad = btn.dataset.pad;
     const intent = { left: "left", right: "right", rotate: "rotate",
-                     drop: "hard", pause: "pause" }[pad];
+                     soft: "soft", drop: "hard", pause: "pause" }[pad];
+    const repeatable = intent === "left" || intent === "right" || intent === "soft";
     let holdT = null, repeatT = null;
     const stop = () => {
       clearTimeout(holdT); clearInterval(repeatT);
@@ -1376,7 +1515,7 @@ const InputController = {
     btn.addEventListener("pointerdown", (e) => {
       e.preventDefault();                      // suppress ghost mouse events
       this.dispatch(intent);
-      if (intent === "left" || intent === "right") {
+      if (repeatable) {
         holdT = setTimeout(() => {
           repeatT = setInterval(() => this.dispatch(intent), Config.PAD_REPEAT_MS);
         }, Config.PAD_HOLD_MS);
@@ -1447,14 +1586,18 @@ const App = {
   groundedMs: 0,
   lockResets: 0,
   clearing: null,     // { rows:Set, start:number }
+  timed: true,        // false = "Play Again — No Timer" free-play mode
+  breatheReturn: null,// where the breathing overlay should return to
 
   announce(text) { byId("sr-status").textContent = text; },
 
   /* ---- lifecycle -------------------------------------------------------- */
-  begin() {
-    BreathingGuide.cancel();
+  /** @param {boolean} [timed] run the 10-minute countdown (default true) */
+  begin(timed = true) {
+    this.timed = timed;
+    IntroBreathing.cancel();
     this.engine.reset();
-    SessionTimer.reset();
+    SessionTimer.reset(timed);
     this.resetPieceState();
     this.clearing = null;
     ScreenManager.show("session");
@@ -1464,6 +1607,23 @@ const App = {
       this.state = "playing";
       this.startLoop();
     }));
+  },
+
+  /* Open the research article ("Why play this after a stressful event?") */
+  openResearch() { window.open(Config.RESEARCH_URL, "_blank", "noopener"); },
+
+  /* Breathing cue overlay — reachable from Pause and from the wrap-up screen.
+     `returnTo` is "pause" (reopen the pause menu) or "complete" (just close). */
+  openBreathe(returnTo) {
+    this.breatheReturn = returnTo;
+    DialogManager.close();
+    DialogManager.open("veil-breathe");
+  },
+  closeBreathe() {
+    PauseBreathing.cancel();
+    DialogManager.close();
+    if (this.breatheReturn === "pause") DialogManager.open("veil-pause");
+    this.breatheReturn = null;
   },
 
   endSession() {
@@ -1477,7 +1637,7 @@ const App = {
 
   restart() {
     this.engine.reset();
-    SessionTimer.reset();
+    SessionTimer.reset(this.timed);   // preserve current timed / free-play mode
     this.resetPieceState();
     this.clearing = null;
     this.syncHud();
@@ -1589,11 +1749,18 @@ const App = {
     this.gravAcc = 0;
     this.syncHud();
     if (rows.length) {
+      // Gentle haptic acknowledgement on a line clear (where supported).
+      this.haptic(rows.length > 1 ? [16, 40, 16] : 14);
       this.clearing = { rows: new Set(rows), start: performance.now() };
     } else if (this.engine.gameOver) {
       this.render();
       this.boardFilled();
     }
+  },
+
+  /* Soft haptic feedback; no-ops where the API is unavailable or blocked. */
+  haptic(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) { /* ignore */ }
   },
 
   boardFilled() {
@@ -1673,7 +1840,8 @@ const App = {
 
     ThemeManager.init();
     DialogManager.init();
-    BreathingGuide.init();
+    IntroBreathing.init();
+    PauseBreathing.init();
     BoardRenderer.init();
     InputController.init((intent) => this.handleIntent(intent));
     EmbedAdapter.init(() => this.refit());
@@ -1694,8 +1862,13 @@ const App = {
 
     /* Pause dialog */
     byId("resume-btn").addEventListener("click", () => this.resume());
+    byId("pause-breathe-btn").addEventListener("click", () => this.openBreathe("pause"));
     byId("pause-end-btn").addEventListener("click", () => this.endSession());
     DialogManager.escapeActions["veil-pause"] = () => this.resume();
+
+    /* Breathing overlay */
+    byId("breathe-back").addEventListener("click", () => this.closeBreathe());
+    DialogManager.escapeActions["veil-breathe"] = () => this.closeBreathe();
 
     /* Restart dialog */
     byId("restart-yes").addEventListener("click", () => {
@@ -1707,10 +1880,19 @@ const App = {
     byId("restart-no").addEventListener("click", () => this.closeDialogAndPlay());
     DialogManager.escapeActions["veil-restart"] = () => this.closeDialogAndPlay();
 
-    /* Ten-minute dialog */
-    byId("timeup-continue").addEventListener("click", () => this.closeDialogAndPlay());
+    /* Ten-minute dialog — "continue" switches the session to untimed */
+    byId("timeup-continue").addEventListener("click", () => {
+      SessionTimer.setUntimed();
+      this.timed = false;
+      this.closeDialogAndPlay();
+    });
     byId("timeup-finish").addEventListener("click", () => this.endSession());
-    DialogManager.escapeActions["veil-timeup"] = () => this.closeDialogAndPlay();
+    byId("timeup-why").addEventListener("click", () => this.openResearch());
+    DialogManager.escapeActions["veil-timeup"] = () => {
+      SessionTimer.setUntimed();
+      this.timed = false;
+      this.closeDialogAndPlay();
+    };
 
     /* Board-filled dialog */
     byId("filled-continue").addEventListener("click", () => {
@@ -1721,12 +1903,19 @@ const App = {
       this.closeDialogAndPlay();
     });
     byId("filled-finish").addEventListener("click", () => this.endSession());
+    byId("filled-why").addEventListener("click", () => this.openResearch());
     DialogManager.escapeActions["veil-filled"] = () => {
       byId("filled-continue").click();
     };
 
-    /* Phase 3 */
-    byId("again-btn").addEventListener("click", () => this.begin());
+    /* Side panel "Why this?" */
+    byId("side-why-btn").addEventListener("click", () => this.openResearch());
+
+    /* Phase 3 — wrap-up screen */
+    byId("again-btn").addEventListener("click", () => this.begin(true));
+    byId("again-untimed-btn").addEventListener("click", () => this.begin(false));
+    byId("complete-breathe-btn").addEventListener("click", () => this.openBreathe("complete"));
+    byId("complete-why-btn").addEventListener("click", () => this.openResearch());
     byId("return-btn").addEventListener("click", () => {
       EmbedAdapter.notifyReturn();
       this.state = "idle";
@@ -1745,10 +1934,18 @@ const App = {
     document.addEventListener("touchmove", (e) => {
       if (ScreenManager.current === "session" &&
           e.target instanceof Element &&
-          e.target.closest(".board-frame, .pads, .session__bar")) {
+          e.target.closest(".board-frame, .controls, .session__bar")) {
         e.preventDefault();
       }
     }, { passive: false });
+
+    /* Progressive enhancement: register a service worker for offline use when
+       one is hosted alongside this file. No-ops in single-file / sandboxed
+       contexts (file://, the artifact) where sw.js isn't reachable. */
+    if ("serviceWorker" in navigator) {
+      try { navigator.serviceWorker.register("sw.js").catch(() => {}); }
+      catch (_) { /* ignore */ }
+    }
 
     EmbedAdapter.postSize();
   }

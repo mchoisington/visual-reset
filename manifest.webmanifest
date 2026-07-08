@@ -1,0 +1,14 @@
+{
+  "name": "10-Minute Visual Reset",
+  "short_name": "Visual Reset",
+  "description": "A brief visual-spatial grounding activity. No accounts, no data collection.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#10151a",
+  "theme_color": "#10151a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
