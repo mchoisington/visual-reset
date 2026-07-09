@@ -46,7 +46,7 @@
    friendly); light theme via [data-theme="light"]. Contrast targets WCAG AA.
    ========================================================================== */
 :root {
-  /* Type system: DM Sans for UI/body, Libre Baskerville for
+  /* Holding the Line type system: DM Sans for UI/body, Libre Baskerville for
      headings and the brand lockup. System fallbacks match the brand guide. */
   --font: "DM Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
@@ -92,7 +92,7 @@
 }
 
 [data-theme="light"] {
-  /* Warm cream content surfaces with the
+  /* Warm cream content surfaces (Holding the Line brand nod) with the
      brand's ink / slate text ramp. */
   --bg:        #F8F6F2;   /* --cream */
   --panel:     #ffffff;
@@ -217,6 +217,36 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
 .eyebrow:empty { display: none; }   /* collapse cleanly when no label is set */
 .fine { font-size: 0.85rem; color: var(--ink-dim); }
 
+/* ---- Brand lockup (Holding the Line masthead) --------------------------- */
+.masthead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  text-align: center;
+}
+.masthead__name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 3.4vw, 1.28rem);
+  letter-spacing: 0.005em;
+  color: var(--ink);
+}
+/* The brand's signature red line — the single restrained red accent. */
+.masthead__rule {
+  width: 52px;
+  height: 2px;
+  background: var(--brand-red);
+  border-radius: 2px;
+}
+.masthead__desc {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
 
 /* ==========================================================================
    4. CARDS, LISTS, NOTICES
@@ -759,9 +789,11 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 1 — PRE-RESET GROUNDING
        ==================================================================== -->
   <section class="screen is-active" id="screen-intro" aria-labelledby="intro-title" tabindex="-1">
-    <!-- Brand slot: leave blank for a generic build, or drop in an
-         organization name, e.g. <p class="eyebrow">Your Organization</p> -->
-    <p class="eyebrow" id="intro-eyebrow"></p>
+    <div class="masthead">
+      <span class="masthead__name">Holding the Line</span>
+      <span class="masthead__rule" aria-hidden="true"></span>
+      <span class="masthead__desc">Clinical Support for Oregon Public Safety</span>
+    </div>
     <h1 id="intro-title">10-Minute Visual Reset</h1>
 
     <div class="card">
@@ -944,7 +976,11 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 3 — POST-RESET TRANSITION
        ==================================================================== -->
   <section class="screen" id="screen-complete" aria-labelledby="complete-title" tabindex="-1">
-    <p class="eyebrow" id="complete-eyebrow"></p>
+    <div class="masthead">
+      <span class="masthead__name">Holding the Line</span>
+      <span class="masthead__rule" aria-hidden="true"></span>
+      <span class="masthead__desc">Clinical Support for Oregon Public Safety</span>
+    </div>
     <h1 id="complete-title">Reset Complete</h1>
 
     <div class="card">
