@@ -46,7 +46,7 @@
    friendly); light theme via [data-theme="light"]. Contrast targets WCAG AA.
    ========================================================================== */
 :root {
-  /* Holding the Line type system: DM Sans for UI/body, Libre Baskerville for
+  /* Type system: DM Sans for UI/body, Libre Baskerville for
      headings and the brand lockup. System fallbacks match the brand guide. */
   --font: "DM Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
@@ -92,7 +92,7 @@
 }
 
 [data-theme="light"] {
-  /* Warm cream content surfaces (Holding the Line brand nod) with the
+  /* Warm cream content surfaces with the
      brand's ink / slate text ramp. */
   --bg:        #F8F6F2;   /* --cream */
   --panel:     #ffffff;
@@ -217,36 +217,6 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
 .eyebrow:empty { display: none; }   /* collapse cleanly when no label is set */
 .fine { font-size: 0.85rem; color: var(--ink-dim); }
 
-/* ---- Brand lockup (Holding the Line masthead) --------------------------- */
-.masthead {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 16px;
-  text-align: center;
-}
-.masthead__name {
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: clamp(1.05rem, 3.4vw, 1.28rem);
-  letter-spacing: 0.005em;
-  color: var(--ink);
-}
-/* The brand's signature red line — the single restrained red accent. */
-.masthead__rule {
-  width: 52px;
-  height: 2px;
-  background: var(--brand-red);
-  border-radius: 2px;
-}
-.masthead__desc {
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-}
 
 /* ==========================================================================
    4. CARDS, LISTS, NOTICES
@@ -409,6 +379,122 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
   font-variant-numeric: tabular-nums;
 }
 .breath__actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ---- Breathing hub: three techniques stacked on the intro screen -------- */
+.breathe-hub { margin-top: 28px; }
+.breathe-hub__lead { text-align: center; margin: 4px 0 16px; }
+.breathe-hub__lead h2 { margin-bottom: 6px; }
+.breathe-hub__sub { max-width: 480px; margin: 0 auto; }
+
+.tech { padding: 16px 20px; }             /* .tech is also a .card */
+.tech__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.tech__title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.06rem;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0;
+}
+.tech__desc { margin: 10px 0 0; }
+.tech__bar--sub { align-items: flex-start; margin-bottom: 4px; }
+.tech__bar--sub .tech__desc { margin: 0; flex: 1; text-align: left; }
+.tech .js-why { flex: 0 0 auto; white-space: nowrap; }
+.tech__why-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+/* Collapsible technique cards (Box, Resonance) */
+.tech__toggle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  min-height: 40px;
+}
+.tech__toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+.tech__chev {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--accent);
+  transition: transform 200ms ease;
+}
+.tech--open .tech__chev { transform: rotate(45deg); }   /* + becomes × */
+.tech__body { margin-top: 14px; }
+
+/* Box-breathing visual: outline + marker traveling the perimeter */
+.box-stage {
+  position: relative;
+  width: min(64vw, 250px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+}
+.box-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.box-track {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.30;
+}
+.box-marker {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 3px rgba(116, 164, 158, 0.6));
+}
+.box-word {
+  position: absolute;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  pointer-events: none;
+}
+.box-stage { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* Breathing overlay: technique selector + panels */
+.dialog--breathe { max-width: 440px; }
+.ov-tabs { display: flex; gap: 8px; justify-content: center; margin: 4px 0 14px; flex-wrap: wrap; }
+.ov-tab {
+  appearance: none; cursor: pointer; font: inherit;
+  font-size: 0.82rem; font-weight: 600;
+  padding: 8px 16px; min-height: 40px;
+  color: var(--ink-mid);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  touch-action: manipulation;
+}
+.ov-tab.is-active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ov-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ov-why { text-align: center; margin: 12px 0 0; }
+
+/* Breathing picker (pause + wrap-up): a label plus three technique buttons */
+.breathe-pick { margin-top: 18px; text-align: center; }
+.breathe-pick__label {
+  display: block;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+.breathe-pick__row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.breathe-pick__row .btn { flex: 1 1 auto; min-width: 92px; }
+.complete-why { max-width: 560px; margin: 16px auto 0; text-align: center; }
 
 /* ==========================================================================
    7. SESSION (GAME) LAYOUT
@@ -673,11 +759,9 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 1 — PRE-RESET GROUNDING
        ==================================================================== -->
   <section class="screen is-active" id="screen-intro" aria-labelledby="intro-title" tabindex="-1">
-    <div class="masthead">
-      <span class="masthead__name">Holding the Line</span>
-      <span class="masthead__rule" aria-hidden="true"></span>
-      <span class="masthead__desc">Clinical Support for Oregon Public Safety</span>
-    </div>
+    <!-- Brand slot: leave blank for a generic build, or drop in an
+         organization name, e.g. <p class="eyebrow">Your Organization</p> -->
+    <p class="eyebrow" id="intro-eyebrow"></p>
     <h1 id="intro-title">10-Minute Visual Reset</h1>
 
     <div class="card">
@@ -686,29 +770,103 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         peer support, a trusted supervisor or teammate, chaplain support, a close friend or partner,
         or a qualified mental health professional.</p>
       <ul class="ground-list">
-        <li>Take at least 3 slow breaths before you begin.</li>
         <li>Notice your feet, your hands, and your breathing.</li>
         <li>Set your attention on the shapes, movement, color, and placement.</li>
         <li>The goal is not performance. The goal is visual focus and nervous system downshifting.</li>
       </ul>
     </div>
 
-    <div class="card">
-      <h2>Optional breathing cue</h2>
-      <p class="fine">Three slow cycles — in for 4, hold for 7, out for 8. About a minute, and
-        entirely optional.</p>
-      <div class="breath">
-        <div class="breath__stage">
-          <span class="breath__ring" aria-hidden="true"></span>
-          <div class="breath__disc" id="breath-disc" aria-hidden="true"></div>
-          <span class="breath__phase" id="breath-phase" aria-live="polite"></span>
+    <section class="breathe-hub" aria-labelledby="breathe-hub-title">
+      <div class="breathe-hub__lead">
+        <h2 id="breathe-hub-title">Take a minute to settle first</h2>
+        <p class="fine breathe-hub__sub">A slow, guided breath before the reset. Follow whichever
+          feels right &mdash; or begin whenever you&rsquo;re ready.</p>
+      </div>
+
+      <!-- Technique 1 — 4-7-8 (shown open and ready) -->
+      <div class="card tech" id="tech-478">
+        <div class="tech__bar">
+          <h3 class="tech__title">4-7-8 breathing</h3>
         </div>
-        <div class="breath__meta" id="breath-meta">3 cycles &middot; about one minute</div>
-        <div class="breath__actions">
-          <button class="btn" id="breath-toggle" type="button">Start breathing cue</button>
+        <p class="fine tech__desc">In for 4, hold 7, out 8. Making the exhale longer than the inhale
+          nudges the body toward its &ldquo;rest&rdquo; state &mdash; research links 4-7-8 to a lower
+          heart rate, lower blood pressure, and less anxiety.
+          <a class="tech__why-link" href="https://health.clevelandclinic.org/4-7-8-breathing"
+             target="_blank" rel="noopener noreferrer"
+             aria-label="Why 4-7-8 breathing helps — opens a Cleveland Clinic article in a new tab">Learn more &rarr;</a></p>
+        <div class="breath">
+          <div class="breath__stage">
+            <span class="breath__ring" aria-hidden="true"></span>
+            <div class="breath__disc" id="breath-disc" aria-hidden="true"></div>
+            <span class="breath__phase" id="breath-phase" aria-live="polite"></span>
+          </div>
+          <div class="breath__meta" id="breath-meta"></div>
+          <div class="breath__actions">
+            <button class="btn" id="breath-toggle" type="button">Start breathing</button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- Technique 2 — Box breathing (collapsible) -->
+      <div class="card tech tech--collapsible" id="tech-box">
+        <button class="tech__bar tech__toggle" type="button" id="box-expand"
+                aria-expanded="false" aria-controls="tech-box-body">
+          <span class="tech__title">Box breathing</span>
+          <span class="tech__chev" aria-hidden="true">+</span>
+        </button>
+        <div class="tech__body" id="tech-box-body" hidden>
+          <p class="fine tech__desc">Equal counts of four &mdash; breathe in, soft pause, out, soft
+            pause &mdash; following the dot around the square. Keep the pauses relaxed, not a strained
+            breath-hold. Widely used in tactical and military training to steady the stress response
+            and stay composed.
+            <a class="tech__why-link" href="https://www.medicalnewstoday.com/articles/321805"
+               target="_blank" rel="noopener noreferrer"
+               aria-label="Learn more about box breathing — opens a Medical News Today article in a new tab">Learn more &rarr;</a></p>
+          <div class="breath">
+            <div class="box-stage" id="box-stage">
+              <svg class="box-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <path id="box-path" class="box-track"
+                      d="M 8 80 L 8 20 A 12 12 0 0 1 20 8 L 80 8 A 12 12 0 0 1 92 20 L 92 80 A 12 12 0 0 1 80 92 L 20 92 A 12 12 0 0 1 8 80 Z" />
+                <circle id="box-marker" class="box-marker" r="4.5" cx="8" cy="80" />
+              </svg>
+              <span class="box-word" id="box-word" aria-live="polite"></span>
+            </div>
+            <div class="breath__meta" id="box-meta"></div>
+            <div class="breath__actions">
+              <button class="btn" id="box-toggle" type="button">Start breathing</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technique 3 — Resonance / 6 breaths per minute (collapsible) -->
+      <div class="card tech tech--collapsible" id="tech-res">
+        <button class="tech__bar tech__toggle" type="button" id="res-expand"
+                aria-expanded="false" aria-controls="tech-res-body">
+          <span class="tech__title">Resonance breathing &middot; 6 / min</span>
+          <span class="tech__chev" aria-hidden="true">+</span>
+        </button>
+        <div class="tech__body" id="tech-res-body" hidden>
+          <p class="fine tech__desc">Slow and even &mdash; 5 seconds in, 5 seconds out, about six
+            breaths a minute. This pace maximizes heart-rate variability, a marker of nervous-system
+            resilience, and is the rate used in clinical HRV biofeedback.
+            <a class="tech__why-link" href="https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2017.00222/full"
+               target="_blank" rel="noopener noreferrer"
+               aria-label="Why resonance breathing helps — opens a Frontiers in Public Health article in a new tab">Learn more &rarr;</a></p>
+          <div class="breath">
+            <div class="breath__stage">
+              <span class="breath__ring" aria-hidden="true"></span>
+              <div class="breath__disc" id="res-disc" aria-hidden="true"></div>
+              <span class="breath__phase" id="res-phase" aria-live="polite"></span>
+            </div>
+            <div class="breath__meta" id="res-meta"></div>
+            <div class="breath__actions">
+              <button class="btn" id="res-toggle" type="button">Start breathing</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="actions">
       <button class="btn btn--primary btn--tall" id="begin-btn" type="button" style="flex-basis:100%">
@@ -757,12 +915,10 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
           <div class="side__label">Score</div>
           <div class="side__value" id="hud-score">0</div>
         </div>
-        <a class="btn btn--small side__why js-why" id="side-why-btn"
-           href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
-           target="_blank" rel="noopener noreferrer"
-           aria-label="Why play this game after a stressful event? Opens research article in a new tab">
+        <button class="btn btn--small side__why" id="side-why-btn" type="button"
+                aria-label="Why play this game after a stressful event?">
           Why this?
-        </a>
+        </button>
       </aside>
 
       <p class="session__hint">Focus on the shapes.<br>Let the rest of your system settle.
@@ -788,11 +944,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 3 — POST-RESET TRANSITION
        ==================================================================== -->
   <section class="screen" id="screen-complete" aria-labelledby="complete-title" tabindex="-1">
-    <div class="masthead">
-      <span class="masthead__name">Holding the Line</span>
-      <span class="masthead__rule" aria-hidden="true"></span>
-      <span class="masthead__desc">Clinical Support for Oregon Public Safety</span>
-    </div>
+    <p class="eyebrow" id="complete-eyebrow"></p>
     <h1 id="complete-title">Reset Complete</h1>
 
     <div class="card">
@@ -813,13 +965,17 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         Lifeline) right now.</p>
     </div>
 
+    <p class="fine complete-why">Why a puzzle after a hard call? Doing something visually
+      demanding soon after a distressing event may compete with the way the brain locks in
+      intrusive images &mdash; a line of research has used falling-block games to reduce how often
+      those images return. It&rsquo;s a brief, evidence-informed reset, not treatment.
+      <a class="tech__why-link" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
+         target="_blank" rel="noopener noreferrer">See the research &rarr;</a></p>
+
     <div class="actions">
       <button class="btn btn--primary" id="again-btn" type="button">Play Again</button>
       <button class="btn" id="again-untimed-btn" type="button">Play Again — No Timer</button>
-      <button class="btn" id="complete-breathe-btn" type="button">Breathing Cue Exercise</button>
-      <a class="btn js-why" id="complete-why-btn"
-         href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
-         target="_blank" rel="noopener noreferrer">Why play this after a stressful event?</a>
+      <button class="btn" id="complete-breathe-btn" type="button" data-open-breathe="478">Try a breathing exercise</button>
       <button class="btn" id="return-btn" type="button">Return to Resource App</button>
       <button class="btn" id="resources-btn" type="button">View Support Resources</button>
     </div>
@@ -835,7 +991,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
     <p>Take whatever time you need. The countdown is paused too.</p>
     <div class="actions">
       <button class="btn btn--primary" id="resume-btn" type="button" data-autofocus>Resume</button>
-      <button class="btn" id="pause-breathe-btn" type="button">Breathing cue</button>
+      <button class="btn" type="button" data-open-breathe="478">Breathing exercise</button>
       <button class="btn btn--quiet btn--caution" id="pause-end-btn" type="button">End game now</button>
     </div>
   </div>
@@ -883,22 +1039,86 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
   </div>
 </div>
 
-<!-- Breathing cue overlay — available from Pause and from the wrap-up screen -->
+<!-- Breathing overlay — pick any of the three techniques; switch freely -->
 <div class="veil" id="veil-breathe" role="dialog" aria-modal="true" aria-labelledby="dlg-breathe-t">
-  <div class="dialog">
-    <h2 id="dlg-breathe-t">Breathing cue</h2>
-    <p class="fine">In for 4, hold for 7, out for 8 &mdash; three slow cycles. Optional.</p>
-    <div class="breath">
-      <div class="breath__stage">
-        <span class="breath__ring" aria-hidden="true"></span>
-        <div class="breath__disc" id="pb-disc" aria-hidden="true"></div>
-        <span class="breath__phase" id="pb-phase" aria-live="polite"></span>
-      </div>
-      <div class="breath__meta" id="pb-meta">3 cycles &middot; about one minute</div>
+  <div class="dialog dialog--breathe">
+    <h2 id="dlg-breathe-t">Breathing</h2>
+    <div class="ov-tabs" role="group" aria-label="Choose a breathing exercise">
+      <button class="ov-tab" type="button" data-ov="478" data-autofocus>4-7-8</button>
+      <button class="ov-tab" type="button" data-ov="box">Box</button>
+      <button class="ov-tab" type="button" data-ov="res">Resonance</button>
     </div>
+
+    <div class="ov-panel" data-ovpanel="478">
+      <div class="breath">
+        <div class="breath__stage">
+          <span class="breath__ring" aria-hidden="true"></span>
+          <div class="breath__disc" id="ov478-disc" aria-hidden="true"></div>
+          <span class="breath__phase" id="ov478-phase" aria-live="polite"></span>
+        </div>
+        <div class="breath__meta" id="ov478-meta"></div>
+        <div class="breath__actions">
+          <button class="btn btn--primary" id="ov478-toggle" type="button">Start breathing</button>
+        </div>
+      </div>
+      <p class="fine ov-why">In for 4, hold 7, out 8 &mdash; a quick nervous-system downshift.
+        <a class="tech__why-link" href="https://health.clevelandclinic.org/4-7-8-breathing"
+           target="_blank" rel="noopener noreferrer">Learn more &rarr;</a></p>
+    </div>
+
+    <div class="ov-panel" data-ovpanel="box" hidden>
+      <div class="breath">
+        <div class="box-stage" id="ovbox-stage">
+          <svg class="box-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <path id="ovbox-path" class="box-track" d="M 8 80 L 8 20 A 12 12 0 0 1 20 8 L 80 8 A 12 12 0 0 1 92 20 L 92 80 A 12 12 0 0 1 80 92 L 20 92 A 12 12 0 0 1 8 80 Z" />
+            <circle id="ovbox-marker" class="box-marker" r="4.5" cx="8" cy="80" />
+          </svg>
+          <span class="box-word" id="ovbox-word" aria-live="polite"></span>
+        </div>
+        <div class="breath__meta" id="ovbox-meta"></div>
+        <div class="breath__actions">
+          <button class="btn btn--primary" id="ovbox-toggle" type="button">Start breathing</button>
+        </div>
+      </div>
+      <p class="fine ov-why">Equal 4-4-4-4, with relaxed pauses (not a strained breath-hold).
+        <a class="tech__why-link" href="https://www.medicalnewstoday.com/articles/321805"
+           target="_blank" rel="noopener noreferrer">Learn more &rarr;</a></p>
+    </div>
+
+    <div class="ov-panel" data-ovpanel="res" hidden>
+      <div class="breath">
+        <div class="breath__stage">
+          <span class="breath__ring" aria-hidden="true"></span>
+          <div class="breath__disc" id="ovres-disc" aria-hidden="true"></div>
+          <span class="breath__phase" id="ovres-phase" aria-live="polite"></span>
+        </div>
+        <div class="breath__meta" id="ovres-meta"></div>
+        <div class="breath__actions">
+          <button class="btn btn--primary" id="ovres-toggle" type="button">Start breathing</button>
+        </div>
+      </div>
+      <p class="fine ov-why">5 in, 5 out &mdash; about six breaths a minute; builds HRV.
+        <a class="tech__why-link" href="https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2017.00222/full"
+           target="_blank" rel="noopener noreferrer">Learn more &rarr;</a></p>
+    </div>
+
     <div class="actions">
-      <button class="btn btn--primary" id="pb-toggle" type="button" data-autofocus>Start</button>
       <button class="btn btn--quiet" id="breathe-back" type="button">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- In-game "Why this?" explanation popup -->
+<div class="veil" id="veil-whygame" role="dialog" aria-modal="true" aria-labelledby="whygame-t">
+  <div class="dialog">
+    <h2 id="whygame-t">Why a puzzle after a hard call?</h2>
+    <p>Doing something visually demanding soon after a distressing event may compete with the way
+      the brain locks in intrusive images &mdash; a line of research has used falling-block games to
+      reduce how often those images return. It&rsquo;s a brief, evidence-informed reset, not treatment.</p>
+    <div class="actions">
+      <a class="btn btn--primary" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
+         target="_blank" rel="noopener noreferrer">See the research &rarr;</a>
+      <button class="btn btn--quiet" id="whygame-close" type="button" data-autofocus>Close</button>
     </div>
   </div>
 </div>
@@ -1040,20 +1260,21 @@ const DialogManager = {
 /* Factory so the same cue can drive two independent widgets: the intro      */
 /* card and the in-session pause/wrap-up overlay.                            */
 /* ------------------------------------------------------------------------ */
-function createBreathing(ids) {
+function createBreathing(ids, opts) {
+  opts = opts || {};
   const self = {
     // Each phase carries a soft, low-saturation hue. The circle crossfades
-    // gently between them — sage-teal on the inhale, a calm blue-teal on the
-    // hold, and a soothing periwinkle on the exhale — then back again. All
-    // muted and slow (no flashing) to stay grounding rather than stimulating.
-    PHASES: [
+    // gently between them. Defaults describe 4-7-8; `opts.phases`/`opts.cycles`
+    // override for other circle techniques (e.g. resonance breathing).
+    PHASES: opts.phases || [
       { label: "Inhale", seconds: 4, scale: 1,    rgb: [ 96, 176, 156] },  // sea green
       { label: "Hold",   seconds: 7, scale: null, rgb: [ 84, 150, 190] },  // soft blue
       { label: "Exhale", seconds: 8, scale: 0.58, rgb: [148, 138, 198] }   // soft lavender
     ],
-    CYCLES: 3,
+    CYCLES: opts.cycles || 3,
     timeouts: [],
     active: false,
+    onStart: null,   // hub sets this to cancel sibling techniques
 
     els() {
       return { disc: byId(ids.disc), phase: byId(ids.phase),
@@ -1063,16 +1284,17 @@ function createBreathing(ids) {
     clearTimers() { self.timeouts.forEach(clearTimeout); self.timeouts = []; },
 
     start() {
+      if (self.onStart) self.onStart();     // stop any other running technique
       const el = self.els();
       self.clearTimers();
       self.active = true;
       el.toggle.textContent = "Stop";
-      self.phase(0, 0);
+      self.phase(0);
     },
-    phase(cycle, idx) {
+    phase(idx) {
       if (!self.active) return;
-      if (cycle >= self.CYCLES) { self.finish(); return; }
-      if (idx >= self.PHASES.length) { self.phase(cycle + 1, 0); return; }
+      // Continuous: loop through the phases indefinitely until the user stops.
+      if (idx >= self.PHASES.length) idx = 0;
 
       const el = self.els();
       const p = self.PHASES[idx];
@@ -1092,16 +1314,8 @@ function createBreathing(ids) {
         el.disc.style.transform = "scale(" + p.scale + ")";
       }
 
-      // Per-second counter (visual only; the phase label is the live region)
-      for (let s = 0; s < p.seconds; s++) {
-        const left = p.seconds - s;
-        self.later(() => {
-          if (self.active) {
-            el.meta.textContent = left + "s · cycle " + (cycle + 1) + " of " + self.CYCLES;
-          }
-        }, s * 1000);
-      }
-      self.later(() => self.phase(cycle, idx + 1), p.seconds * 1000);
+      self.clearTimers();   // only ever one pending phase timer
+      self.later(() => self.phase(idx + 1), p.seconds * 1000);
     },
     finish() {
       const el = self.els();
@@ -1113,7 +1327,7 @@ function createBreathing(ids) {
       el.disc.style.borderColor = "";
       el.phase.textContent = "";
       el.meta.textContent = "Complete — begin whenever you’re ready";
-      el.toggle.textContent = "Repeat breathing cue";
+      el.toggle.textContent = "Repeat breathing";
     },
     cancel() {
       const el = self.els();
@@ -1124,8 +1338,8 @@ function createBreathing(ids) {
       el.disc.style.backgroundColor = "";
       el.disc.style.borderColor = "";
       el.phase.textContent = "";
-      el.meta.textContent = self.CYCLES + " cycles · about one minute";
-      el.toggle.textContent = "Start breathing cue";
+      el.meta.textContent = "";
+      el.toggle.textContent = "Start breathing";
     },
     init() {
       const toggle = () => { self.active ? self.cancel() : self.start(); };
@@ -1137,10 +1351,118 @@ function createBreathing(ids) {
   return self;
 }
 
+/* ------------------------------------------------------------------------ */
+/* createBoxBreathing — box breathing (4-4-4-4).                             */
+/* A marker travels the rounded-square outline, one edge per 4s phase; the   */
+/* center shows the phase word only (no countdown). Same public shape as     */
+/* createBreathing (start/cancel/finish/init, active, onStart) so the hub    */
+/* can treat all techniques uniformly.                                       */
+/* ------------------------------------------------------------------------ */
+function createBoxBreathing(ids) {
+  const SIDE_MS = 4000;                 // 4s per edge
+  const CYCLE_MS = SIDE_MS * 4;         // 16s per lap
+  const ROUNDS = 4;                     // ~64s ≈ "about a minute"
+  const LABELS = ["Breathe in", "Hold", "Breathe out", "Hold"];
+  const self = {
+    active: false, onStart: null,
+    raf: null, startTs: null, len: 0, timeouts: [],
+    els() {
+      return { path: byId(ids.path), marker: byId(ids.marker), word: byId(ids.word),
+               meta: byId(ids.meta), toggle: byId(ids.toggle) };
+    },
+    place(el, dist) {                   // move marker to a length along the path
+      const p = el.path.getPointAtLength(dist);
+      el.marker.setAttribute("cx", p.x);
+      el.marker.setAttribute("cy", p.y);
+    },
+    start() {
+      if (self.onStart) self.onStart();
+      const el = self.els();
+      self.stop();
+      self.active = true;
+      el.toggle.textContent = "Stop";
+      self.len = el.path.getTotalLength() || 0;
+      if (reducedMotion) { self.runReduced(); return; }
+      self.startTs = null;
+      const loop = (ts) => {
+        if (!self.active) return;
+        if (self.startTs === null) self.startTs = ts;
+        const inCycle = (ts - self.startTs) % CYCLE_MS;   // loops forever
+        self.place(el, (inCycle / CYCLE_MS) * self.len);
+        el.word.textContent = LABELS[Math.floor(inCycle / SIDE_MS)];
+        self.raf = requestAnimationFrame(loop);
+      };
+      self.raf = requestAnimationFrame(loop);
+    },
+    runReduced() {                      // no motion: advance the word every 4s
+      const el = self.els();
+      let step = 0;
+      const tick = () => {
+        if (!self.active) return;
+        el.word.textContent = LABELS[step % 4];
+        step++;
+        self.timeouts.push(setTimeout(tick, SIDE_MS));
+      };
+      tick();
+    },
+    stop() {
+      self.active = false;
+      if (self.raf) { cancelAnimationFrame(self.raf); self.raf = null; }
+      self.timeouts.forEach(clearTimeout); self.timeouts = [];
+    },
+    reset() { const el = self.els(); if (self.len || el.path.getTotalLength) self.place(el, 0); },
+    finish() {
+      const el = self.els();
+      self.stop();
+      self.reset();
+      el.word.textContent = "";
+      el.meta.textContent = "Complete — begin whenever you’re ready";
+      el.toggle.textContent = "Repeat breathing";
+    },
+    cancel() {
+      const el = self.els();
+      self.stop();
+      self.reset();
+      el.word.textContent = "";
+      el.meta.textContent = "";
+      el.toggle.textContent = "Start breathing";
+    },
+    init() {
+      const toggle = () => { self.active ? self.cancel() : self.start(); };
+      byId(ids.toggle).addEventListener("click", toggle);
+      byId(ids.stage).addEventListener("click", toggle);   // the box itself toggles too
+    }
+  };
+  return self;
+}
+
+/* Resonance phases shared by the intro hub and the overlay instance. */
+const RES_OPTS = { phases: [
+  { label: "Inhale", seconds: 5, scale: 1,    rgb: [104, 150, 190] },  // soft blue
+  { label: "Exhale", seconds: 5, scale: 0.58, rgb: [126, 166, 202] }   // lighter blue
+] };
+
+/* Intro-hub instances (mutually exclusive: one active at a time). */
 const IntroBreathing = createBreathing({
   disc: "breath-disc", phase: "breath-phase", meta: "breath-meta", toggle: "breath-toggle" });
-const PauseBreathing = createBreathing({
-  disc: "pb-disc", phase: "pb-phase", meta: "pb-meta", toggle: "pb-toggle" });
+const ResonanceBreathing = createBreathing(
+  { disc: "res-disc", phase: "res-phase", meta: "res-meta", toggle: "res-toggle" }, RES_OPTS);
+const BoxBreathing = createBoxBreathing({
+  path: "box-path", marker: "box-marker", word: "box-word", stage: "box-stage",
+  meta: "box-meta", toggle: "box-toggle" });
+
+const IntroTechniques = [IntroBreathing, ResonanceBreathing, BoxBreathing];
+function cancelAllBreathing() { IntroTechniques.forEach((t) => t.cancel()); }
+
+/* Overlay (pause / wrap-up) instances — separate DOM so the overlay can host
+   all three techniques and switch between them. */
+const OverlayTechniques = {
+  "478": createBreathing({ disc: "ov478-disc", phase: "ov478-phase", meta: "ov478-meta", toggle: "ov478-toggle" }),
+  "box": createBoxBreathing({ path: "ovbox-path", marker: "ovbox-marker", word: "ovbox-word", stage: "ovbox-stage", meta: "ovbox-meta", toggle: "ovbox-toggle" }),
+  "res": createBreathing({ disc: "ovres-disc", phase: "ovres-phase", meta: "ovres-meta", toggle: "ovres-toggle" }, RES_OPTS)
+};
+function overlayList() { return [OverlayTechniques["478"], OverlayTechniques.box, OverlayTechniques.res]; }
+function cancelAllOverlay() { overlayList().forEach((t) => t.cancel()); }
 
 /* ------------------------------------------------------------------------ */
 /* Engine — pure game rules (no DOM)                                         */
@@ -1694,7 +2016,7 @@ const App = {
   /** @param {boolean} [timed] run the 10-minute countdown (default true) */
   begin(timed = true) {
     this.timed = timed;
-    IntroBreathing.cancel();
+    cancelAllBreathing();
     this.engine.reset();
     SessionTimer.reset(timed);
     this.resetPieceState();
@@ -1710,17 +2032,32 @@ const App = {
 
   /* Breathing cue overlay — reachable from Pause and from the wrap-up screen.
      `returnTo` is "pause" (reopen the pause menu) or "complete" (just close). */
-  openBreathe(returnTo) {
+  openBreathe(returnTo, tech) {
     this.breatheReturn = returnTo;
     DialogManager.close();
     DialogManager.open("veil-breathe");
+    this.selectOverlayTech(tech || "478", true);
+  },
+  selectOverlayTech(tech, autostart) {
+    cancelAllOverlay();
+    document.querySelectorAll("#veil-breathe .ov-panel").forEach(function (p) {
+      p.hidden = (p.getAttribute("data-ovpanel") !== tech);
+    });
+    document.querySelectorAll("#veil-breathe .ov-tab").forEach(function (t) {
+      var on = t.getAttribute("data-ov") === tech;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    if (autostart && OverlayTechniques[tech]) OverlayTechniques[tech].start();
   },
   closeBreathe() {
-    PauseBreathing.cancel();
+    cancelAllOverlay();
     DialogManager.close();
     if (this.breatheReturn === "pause") DialogManager.open("veil-pause");
     this.breatheReturn = null;
   },
+  /* In-game "Why this?" — pauses the game and shows the explanation popup. */
+  openWhyGame() { this.openDialog("veil-whygame"); },
 
   endSession() {
     this.stopLoop();
@@ -1938,7 +2275,38 @@ const App = {
     ThemeManager.init();
     DialogManager.init();
     IntroBreathing.init();
-    PauseBreathing.init();
+    ResonanceBreathing.init();
+    BoxBreathing.init();
+    // Overlay (pause / wrap-up) breathing: init instances, make mutually
+    // exclusive, wire the tab selector and the entry pickers.
+    overlayList().forEach(function (t) {
+      t.init();
+      t.onStart = function () { overlayList().forEach(function (o) { if (o !== t) o.cancel(); }); };
+    });
+    document.querySelectorAll("#veil-breathe .ov-tab").forEach(function (tab) {
+      tab.addEventListener("click", function () { App.selectOverlayTech(tab.getAttribute("data-ov"), true); });
+    });
+    document.querySelectorAll("[data-open-breathe]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var ret = btn.closest("#veil-pause") ? "pause" : "complete";
+        App.openBreathe(ret, btn.getAttribute("data-open-breathe"));
+      });
+    });
+    // One breathing technique at a time: starting any cancels the others.
+    IntroTechniques.forEach((t) => {
+      t.onStart = () => IntroTechniques.forEach((o) => { if (o !== t) o.cancel(); });
+    });
+    // Expand/collapse the Box and Resonance technique cards.
+    [["box-expand", "tech-box-body", "tech-box", BoxBreathing],
+     ["res-expand", "tech-res-body", "tech-res", ResonanceBreathing]].forEach(function (row) {
+      var btn = byId(row[0]), body = byId(row[1]), card = byId(row[2]), tech = row[3];
+      btn.addEventListener("click", function () {
+        var open = card.classList.toggle("tech--open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open) { body.hidden = false; }
+        else { body.hidden = true; tech.cancel(); }   // stop it if collapsed mid-run
+      });
+    });
     BoardRenderer.init();
     InputController.init((intent) => this.handleIntent(intent));
     EmbedAdapter.init(() => this.refit());
@@ -1959,13 +2327,17 @@ const App = {
 
     /* Pause dialog */
     byId("resume-btn").addEventListener("click", () => this.resume());
-    byId("pause-breathe-btn").addEventListener("click", () => this.openBreathe("pause"));
     byId("pause-end-btn").addEventListener("click", () => this.endSession());
     DialogManager.escapeActions["veil-pause"] = () => this.resume();
 
     /* Breathing overlay */
     byId("breathe-back").addEventListener("click", () => this.closeBreathe());
     DialogManager.escapeActions["veil-breathe"] = () => this.closeBreathe();
+
+    /* In-game "Why this?" popup */
+    byId("side-why-btn").addEventListener("click", () => this.openWhyGame());
+    byId("whygame-close").addEventListener("click", () => this.closeDialogAndPlay());
+    DialogManager.escapeActions["veil-whygame"] = () => this.closeDialogAndPlay();
 
     /* Restart dialog */
     byId("restart-yes").addEventListener("click", () => {
@@ -2006,7 +2378,6 @@ const App = {
     /* Phase 3 — wrap-up screen */
     byId("again-btn").addEventListener("click", () => this.begin(true));
     byId("again-untimed-btn").addEventListener("click", () => this.begin(false));
-    byId("complete-breathe-btn").addEventListener("click", () => this.openBreathe("complete"));
     byId("return-btn").addEventListener("click", () => {
       EmbedAdapter.notifyReturn();
       this.state = "idle";
