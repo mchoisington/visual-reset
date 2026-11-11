@@ -332,6 +332,7 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;              /* a link's wrapped text centers like a button's (2026-11-10) */
   gap: 8px;
   cursor: pointer;
   text-decoration: none;           /* .btn is used on <a> links too */
@@ -755,6 +756,8 @@ p  { margin: 0 0 12px; font-size: clamp(0.94rem, 2.5vw, 1rem); line-height: 1.68
 /* ==========================================================================
    9. MISC
    ========================================================================== */
+/* Back to Downshift (2026-11-10): the way out of this page, on the first screen and the last. */
+.back-btn { margin: 0 0 10px; padding: 0 14px; }
 .theme-btn {
   position: fixed;
   top: calc(env(safe-area-inset-top) + 10px);
@@ -789,6 +792,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
        PHASE 1 — PRE-RESET GROUNDING
        ==================================================================== -->
   <section class="screen is-active" id="screen-intro" aria-labelledby="intro-title" tabindex="-1">
+    <a class="btn btn--quiet back-btn js-back" href="/">&larr; Back to Downshift</a>
     <div class="masthead">
       <span class="masthead__name">Holding the Line</span>
       <span class="masthead__rule" aria-hidden="true"></span>
@@ -1012,8 +1016,7 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
       <button class="btn btn--primary" id="again-btn" type="button">Play Again</button>
       <button class="btn" id="again-untimed-btn" type="button">Play Again — No Timer</button>
       <button class="btn" id="complete-breathe-btn" type="button" data-open-breathe="478">Try a breathing exercise</button>
-      <button class="btn" id="return-btn" type="button">Return to Resource App</button>
-      <button class="btn" id="resources-btn" type="button">View Support Resources</button>
+      <a class="btn js-back" id="return-btn" href="/">Back to Downshift</a>
     </div>
   </section>
 </div>
@@ -1197,8 +1200,9 @@ const Config = {
   SOFT_MS: 45,                  // held soft-drop rate
   PAD_HOLD_MS: 220,             // touch hold before repeat starts
   PAD_REPEAT_MS: 70,            // touch repeat rate
-  // Replace with your organization's resource page:
-  SUPPORT_URL: "https://988lifeline.org/",
+  // Back to Downshift (2026-11-10): the app's home. The 988 web page button was removed; the app's Help now
+  // button has the crisis lines.
+  RETURN_URL: "/",
   // "Why play this?" — the foundational open-access study on visuospatial
   // gameplay and intrusive memories (Holmes et al., PLoS ONE, 2009).
   // NOTE: this URL is also set directly on the four "Why…" <a> links' href
@@ -2414,14 +2418,17 @@ const App = {
     /* Phase 3 — wrap-up screen */
     byId("again-btn").addEventListener("click", () => this.begin(true));
     byId("again-untimed-btn").addEventListener("click", () => this.begin(false));
-    byId("return-btn").addEventListener("click", () => {
-      EmbedAdapter.notifyReturn();
+    // Back to Downshift. Inside a host page's frame: tell the host, as before. On its own: if this page opened
+    // in its own tab or window (the app's link opens it that way), close it, which leaves the app where it was;
+    // if the browser won't close it, open the app's home here. Before 2026-11-10 the last screen only told a host
+    // frame, so on its own page there was no way out.
+    document.querySelectorAll(".js-back").forEach((a) => a.addEventListener("click", (e) => {
+      e.preventDefault();
       this.state = "idle";
-      ScreenManager.show("intro");
-    });
-    byId("resources-btn").addEventListener("click", () => {
-      window.open(Config.SUPPORT_URL, "_blank", "noopener");
-    });
+      if (EmbedAdapter.embedded()) { EmbedAdapter.notifyReturn(); ScreenManager.show("intro"); return; }
+      try { window.close(); } catch (_) { /* not ours to close */ }
+      setTimeout(() => { location.href = Config.RETURN_URL; }, 300);
+    }));
 
     /* Auto-pause when the tab/app is backgrounded mid-session */
     document.addEventListener("visibilitychange", () => {
