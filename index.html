@@ -76,14 +76,16 @@
   --scrim:     rgba(7,10,13,0.82);
   --shadow:    0 10px 32px rgba(0,0,0,0.45);
 
-  /* Pieces — desaturated, distinct, deliberately non-neon */
-  --cell-i: #6fa2a8;
-  --cell-o: #b5a06f;
-  --cell-t: #9484ad;
-  --cell-s: #82a37b;
-  --cell-z: #b28579;
-  --cell-j: #7b90b3;
-  --cell-l: #b28f62;
+  /* Pieces (2026-11-12): flat outlined tiles in the brand's navy, slate and
+     red, not seven bright colors. --cell-edge is every tile's outline. */
+  --cell-edge: #AAB4C0;
+  --cell-i: #5B6B7F;
+  --cell-o: #1d2630;
+  --cell-t: #C0392B;
+  --cell-s: #2C4466;
+  --cell-z: #8D99AB;
+  --cell-j: #3E5370;
+  --cell-l: #AAB4C0;
 
   --r-lg: 16px;
   --r-md: 12px;
@@ -113,13 +115,14 @@
   --scrim:     rgba(228,233,235,0.88);
   --shadow:    0 10px 32px rgba(30,40,45,0.16);
 
-  --cell-i: #41767c;
-  --cell-o: #8f7a3e;
-  --cell-t: #75619b;
-  --cell-s: #5c7f55;
-  --cell-z: #96604f;
-  --cell-j: #4d6a94;
-  --cell-l: #8a6a34;
+  --cell-edge: #000F29;
+  --cell-i: #5B6B7F;
+  --cell-o: #ffffff;
+  --cell-t: #C0392B;
+  --cell-s: #000F29;
+  --cell-z: #AAB4C0;
+  --cell-j: #8D99AB;
+  --cell-l: #2C4466;
 }
 
 /* ==========================================================================
@@ -1191,8 +1194,8 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
 /* Config                                                                    */
 /* ------------------------------------------------------------------------ */
 const Config = {
-  COLS: 10,
-  ROWS: 20,
+  COLS: 8,                      // 8 x 16 board (2026-11-12): not the classic 10 x 20
+  ROWS: 16,
   SESSION_MS: 10 * 60 * 1000,   // the 10-minute window
   LOCK_DELAY_MS: 500,           // grace period once a piece touches down
   MAX_LOCK_RESETS: 15,          // movement can extend lock delay this many times
@@ -1711,6 +1714,7 @@ const BoardRenderer = {
     this.palette = {
       board: read("--board"),
       grid:  read("--grid-line"),
+      edge:  read("--cell-edge"),
       cells: Object.fromEntries(
         PIECE_TYPES.map((t) => [t, read("--cell-" + t.toLowerCase())]))
     };
@@ -1748,25 +1752,21 @@ const BoardRenderer = {
     ctx.closePath();
   },
 
+  /** One flat tile: a solid fill with a thin outline. No sheen, no bevel. */
   block(ctx, px, py, size, fill, alpha, ghost) {
-    const pad = Math.max(1, size * 0.07);
+    const pad = Math.max(1, size * 0.06);
+    const lw = Math.max(1, size * 0.06);
     const s = size - pad * 2;
-    const r = Math.max(2, size * 0.18);
+    const r = Math.max(1.5, size * 0.08);
     ctx.globalAlpha = alpha;
-    if (ghost) {
-      ctx.strokeStyle = fill;
-      ctx.lineWidth = Math.max(1.25, size * 0.07);
-      this.path(ctx, px + pad, py + pad, s, s, r);
-      ctx.stroke();
-    } else {
+    this.path(ctx, px + pad + lw / 2, py + pad + lw / 2, s - lw, s - lw, r);
+    if (!ghost) {
       ctx.fillStyle = fill;
-      this.path(ctx, px + pad, py + pad, s, s, r);
-      ctx.fill();
-      ctx.globalAlpha = alpha * 0.12;      // soft sheen, not gloss
-      ctx.fillStyle = "#ffffff";
-      this.path(ctx, px + pad, py + pad, s, s * 0.42, r);
       ctx.fill();
     }
+    ctx.strokeStyle = ghost ? fill : (this.palette.edge || fill);
+    ctx.lineWidth = lw;
+    ctx.stroke();
     ctx.globalAlpha = 1;
   },
 
