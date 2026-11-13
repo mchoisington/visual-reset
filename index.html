@@ -843,14 +843,14 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         </div>
       </div>
 
-      <!-- Technique 2 — Box breathing (collapsible) -->
-      <div class="card tech tech--collapsible" id="tech-box">
+      <!-- Technique 2 — Box breathing (collapsible; shown open since 2026-11-12, like 4-7-8) -->
+      <div class="card tech tech--collapsible tech--open" id="tech-box">
         <button class="tech__bar tech__toggle" type="button" id="box-expand"
-                aria-expanded="false" aria-controls="tech-box-body">
+                aria-expanded="true" aria-controls="tech-box-body">
           <span class="tech__title">Box breathing</span>
           <span class="tech__chev" aria-hidden="true">+</span>
         </button>
-        <div class="tech__body" id="tech-box-body" hidden>
+        <div class="tech__body" id="tech-box-body">
           <p class="fine tech__desc">Equal counts of four &mdash; breathe in, soft pause, out, soft
             pause &mdash; following the dot around the square. Keep the pauses relaxed, not a strained
             breath-hold. Widely used in tactical and military training to steady the stress response
@@ -875,14 +875,14 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
         </div>
       </div>
 
-      <!-- Technique 3 — Resonance / 6 breaths per minute (collapsible) -->
-      <div class="card tech tech--collapsible" id="tech-res">
+      <!-- Technique 3 — Resonance / 6 breaths per minute (collapsible; shown open since 2026-11-12) -->
+      <div class="card tech tech--collapsible tech--open" id="tech-res">
         <button class="tech__bar tech__toggle" type="button" id="res-expand"
-                aria-expanded="false" aria-controls="tech-res-body">
+                aria-expanded="true" aria-controls="tech-res-body">
           <span class="tech__title">Resonance breathing &middot; 6 / min</span>
           <span class="tech__chev" aria-hidden="true">+</span>
         </button>
-        <div class="tech__body" id="tech-res-body" hidden>
+        <div class="tech__body" id="tech-res-body">
           <p class="fine tech__desc">Slow and even &mdash; 5 seconds in, 5 seconds out, about six
             breaths a minute. This pace maximizes heart-rate variability, a marker of nervous-system
             resilience, and is the rate used in clinical HRV biofeedback.
@@ -1017,6 +1017,8 @@ noscript { display: block; padding: 40px 24px; text-align: center; color: var(--
       <button class="btn" id="again-untimed-btn" type="button">Play Again — No Timer</button>
       <button class="btn" id="complete-breathe-btn" type="button" data-open-breathe="478">Try a breathing exercise</button>
       <a class="btn js-back" id="return-btn" href="/">Back to Downshift</a>
+      <!-- Crisis and peer lines (2026-11-12): opens the app's Help now list, so the numbers live in one place. Was the 988 website. -->
+      <a class="btn" id="help-lines-btn" href="/?open=help">Crisis and peer lines</a>
     </div>
   </section>
 </div>
